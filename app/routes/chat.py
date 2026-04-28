@@ -609,3 +609,59 @@ def get_chat_last_message_id(chat_id: int) -> Optional[int]:
     finally:
         cur.close()
         release_db_connection(conn)
+
+
+# ==================== API ROUTES ====================
+
+from fastapi import Depends, HTTPException
+from ..routes.auth import get_current_user_from_header
+from ..models.user import search_users, get_all_users
+
+
+@router.get("/chats/me", summary="Получить список чатов пользователя")
+def get_my_chats(current_user_id: int = Depends(get_current_user_from_header)):
+    """
+    Возвращает список всех чатов текущего пользователя.
+    """
+    chats = get_user_chats(current_user_id)
+    return {"chats": chats}
+
+
+@router.get("/users/status", summary="Получить статусы онлайн пользователей")
+def get_users_status(current_user_id: int = Depends(get_current_user_from_header)):
+    """
+    Возвращает словарь {user_id: is_online} для всех пользователей.
+    Использует ws_manager для получения статуса подключения.
+    """
+    from ..utils.ws_manager import get_all_online_users
+    online_users = get_all_online_users()
+    return {"online_status": online_users}
+
+
+@router.get("/users/search", summary="Поиск пользователей по email/username")
+def search_users_endpoint(
+    q: str,
+    current_user_id: int = Depends(get_current_user_from_header)
+):
+    """
+    Поиск пользователей по запросу (email или username).
+    Исключает текущего пользователя из результатов.
+    """
+    results = search_users(q, exclude_user_id=current_user_id)
+    return {"users": results}
+
+
+@router.post("/chats/group", summary="Создать групповой чат")
+def create_group_chat_endpoint(
+    name: str,
+    current_user_id: int = Depends(get_current_user_from_header)
+):
+    """
+    Создаёт новый групповой чат с указанным названием.
+    Создатель автоматически становится первым участником.
+    """
+    if not name or not name.strip():
+        raise HTTPException(status_code=400, detail="Название чата обязательно")
+
+    chat_id = create_group_chat(name.strip(), current_user_id)
+    return {"chat_id": chat_id, "name": name.strip()}
