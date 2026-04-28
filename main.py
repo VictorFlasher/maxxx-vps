@@ -161,37 +161,37 @@ app.include_router(config.router, prefix="/api", tags=["Конфигурация
 app.include_router(chat.router, prefix="/api", tags=["Чат"])
 app.include_router(admin.router, prefix="/api", tags=["Администрирование"])
 
-# Фронтенд-маршрут
+# Фронтенд-маршруты
 @app.get("/")
 async def login_page(request: Request):
-    return templates.TemplateResponse("login.html", context={"request": request})
+    return templates.TemplateResponse("login.html", {"request": request})
 
 @app.get("/register")
 async def register_page(request: Request):
-    return templates.TemplateResponse("register.html", context={"request": request})
+    return templates.TemplateResponse("register.html", {"request": request})
 
 @app.get("/chat")
 async def chat_page(request: Request, chat_id: int = None):
     """Страница чата с опциональным параметром chat_id для открытия конкретного чата."""
-    return templates.TemplateResponse("chat.html", context={"request": request, "chat_id": chat_id})
+    return templates.TemplateResponse("chat.html", {"request": request, "chat_id": chat_id})
 
 
 @app.get("/admin/login")
 async def admin_login_page(request: Request):
     """Страница входа в админ-панель."""
-    return templates.TemplateResponse("admin_login.html", context={"request": request})
+    return templates.TemplateResponse("admin_login.html", {"request": request})
 
 
 @app.get("/admin")
 async def admin_panel_redirect(request: Request):
     """Перенаправление на админ-панель (проверка прав происходит на уровне API)."""
-    return templates.TemplateResponse("admin.html", context={"request": request, "user_id": None})
+    return templates.TemplateResponse("admin.html", {"request": request, "user_id": None})
 
 
 @app.get("/search-users")
 async def search_users_page(request: Request):
     """Страница поиска пользователей."""
-    return templates.TemplateResponse("search_users.html", context={"request": request})
+    return templates.TemplateResponse("search_users.html", {"request": request})
 
 # Health check endpoint для мониторинга работоспособности сервиса
 @app.get("/health", tags=["Monitoring"])
