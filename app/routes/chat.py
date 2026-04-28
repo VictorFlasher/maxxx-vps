@@ -1,4 +1,3 @@
-
 """
 Модуль для работы с чатами: создание, проверка участия, получение истории.
 Использует единую таблицу 'chats' для всех типов чатов.
@@ -17,8 +16,10 @@ import os
 from typing import List, Dict, Any, Optional
 import psycopg2
 from ..database import get_db_connection, release_db_connection
+from fastapi import APIRouter
 
 logger = logging.getLogger(__name__)
+router = APIRouter()
 
 
 def _get_chat_members(chat_id: int) -> List[int]:
