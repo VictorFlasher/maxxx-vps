@@ -1009,7 +1009,7 @@ def delete_message(
         sender_id, chat_id = row[0], row[1]
         
         # Проверяем права (владелец или админ)
-        cur.execute("SELECT is_admin FROM users WHERE user_id = %s", (current_user_id,))
+        cur.execute("SELECT is_admin FROM users WHERE id = %s", (current_user_id,))
         is_admin = cur.fetchone()[0]
         
         if sender_id != current_user_id and not is_admin:
@@ -1108,7 +1108,7 @@ def report_message(
         # Нельзя пожаловаться на сообщение админа (если текущий пользователь не админ)
         if sender_is_admin:
             # Проверяем, является ли текущий пользователь админом
-            cur.execute("SELECT is_admin FROM users WHERE user_id = %s", (current_user_id,))
+            cur.execute("SELECT is_admin FROM users WHERE id = %s", (current_user_id,))
             current_user_is_admin = cur.fetchone()[0]
             if not current_user_is_admin:
                 raise HTTPException(

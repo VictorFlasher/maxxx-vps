@@ -237,7 +237,7 @@ def review_report(
                 raise HTTPException(status_code=400, detail="Причина бана обязательна")
             
             # Проверяем, что sender_id не админ
-            cur.execute("SELECT is_admin FROM users WHERE user_id = %s", (sender_id,))
+            cur.execute("SELECT is_admin FROM users WHERE id = %s", (sender_id,))
             admin_row = cur.fetchone()
             if admin_row and admin_row[0]:
                 raise HTTPException(status_code=403, detail="Нельзя забанить администратора")
