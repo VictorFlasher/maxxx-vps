@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+bcrypt
+psycopg2-binary
+python-jose[cryptography]
+jinja2
+slowapi
+defusedxml
+redis

@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель - Maxxx Chat</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
+        .header { background: #2c3e50; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 1.5rem; }
+        .header a { color: white; text-decoration: none; padding: 0.5rem 1rem; background: #34495e; border-radius: 4px; }
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+        .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        .tab { padding: 0.75rem 1.5rem; background: #fff; border: 1px solid #ddd; border-radius: 4px 4px 0 0; cursor: pointer; }
+        .tab.active { background: #3498db; color: white; border-color: #3498db; }
+        .panel { display: none; background: white; padding: 1.5rem; border-radius: 0 4px 4px 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .panel.active { display: block; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; font-weight: 600; }
+        .btn { padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer; font-size: 0.875rem; }
+        .btn-primary { background: #3498db; color: white; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-warning { background: #f39c12; color: white; }
+        .btn:hover { opacity: 0.9; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; }
+        .badge { padding: 0.25rem 0.5rem; border-radius: 3px; font-size: 0.75rem; }
+        .badge-pending { background: #f39c12; color: white; }
+        .badge-actioned { background: #e74c3c; color: white; }
+        .badge-dismissed { background: #95a5a6; color: white; }
+        .message-box { background: #f8f9fa; padding: 1rem; border-radius: 4px; margin: 0.5rem 0; max-height: 150px; overflow-y: auto; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .modal.active { display: flex; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 2rem; border-radius: 8px; max-width: 500px; width: 90%; }
+        .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem; }
+        .history-item { padding: 0.75rem; border-left: 3px solid #3498db; background: #f8f9fa; margin-bottom: 0.5rem; }
+        .history-item.banned { border-color: #e74c3c; }
+        .history-item.unbanned { border-color: #27ae60; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🛡️ Админ-панель</h1>
+        <a href="/chat">← В чат</a>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('reports')">📋 Жалобы (<span id="reports-count">0</span>)</div>
+            <div class="tab" onclick="showTab('bans')">🚫 Активные баны</div>
+            <div class="tab" onclick="showTab('history')">📜 История банов</div>
+        </div>
+
+        <!-- Вкладка жалоб -->
+        <div id="reports-panel" class="panel active">
+            <h2>Жалобы на сообщения</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Сообщение</th>
+                        <th>Автор</th>
+                        <th>Причина</th>
+                        <th>Дата</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody id="reports-body"></tbody>
+            </table>
+        </div>
+
+        <!-- Вкладка активных банов -->
+        <div id="bans-panel" class="panel">
+            <h2>Активные баны</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Пользователь</th>
+                        <th>Забанил</th>
+                        <th>Причина</th>
+                        <th>Дата бана</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody id="bans-body"></tbody>
+            </table>
+        </div>
+
+        <!-- Вкладка истории -->
+        <div id="history-panel" class="panel">
+            <h2>История банов</h2>
+            <div class="form-group" style="max-width: 300px;">
+                <label>Фильтр по пользователю (ID):</label>
+                <input type="number" id="history-user-id" placeholder="Все пользователи">
+                <button class="btn btn-primary" style="margin-top: 0.5rem;" onclick="loadHistory()">Показать</button>
+            </div>
+            <div id="history-list"></div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для бана -->
+    <div id="ban-modal" class="modal">
+        <div class="modal-content">
+            <h3>Забанить пользователя</h3>
+            <p id="ban-user-info"></p>
+            <div class="form-group">
+                <label>Причина бана *</label>
+                <textarea id="ban-reason" rows="3" required></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" onclick="closeModal('ban-modal')">Отмена</button>
+                <button class="btn btn-danger" onclick="confirmBan()">Забанить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для обработки жалобы -->
+    <div id="report-modal" class="modal">
+        <div class="modal-content">
+            <h3>Обработка жалобы</h3>
+            <div class="message-box" id="report-message"></div>
+            <p><strong>Причина жалобы:</strong> <span id="report-reason"></span></p>
+            <div class="modal-actions">
+                <button class="btn" onclick="closeModal('report-modal')">Отмена</button>
+                <button class="btn btn-success" onclick="dismissReport()">Отклонить жалобу</button>
+                <button class="btn btn-danger" onclick="showBanFromReport()">Забанить автора</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Проверка авторизации при загрузке страницы
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/admin/login';
+        } else {
+            // Проверяем, действителен ли токен и является ли пользователь админом
+            fetch('/api/users/status', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Недействительный токен');
+                return res.json();
+            })
+            .then(users => {
+                const isAdmin = users.some(u => u.is_admin);
+                if (!isAdmin) {
+                    localStorage.removeItem('token');
+                    window.location.href = '/admin/login';
+                }
+            })
+            .catch(() => {
+                localStorage.removeItem('token');
+                window.location.href = '/admin/login';
+            });
+        }
+
+        let currentReport = null;
+        let currentBanUserId = null;
+
+        // Вспомогательная функция для API запросов с токеном
+        async function apiRequest(url, options = {}) {
+            const token = localStorage.getItem('token');
+            const headers = {
+                'Content-Type': 'application/json',
+                ...(options.headers || {}),
+                'Authorization': `Bearer ${token}`
+            };
+            
+            const response = await fetch(url, { ...options, headers });
+            
+            if (response.status === 403) {
+                alert('Доступ запрещён. Требуется авторизация администратора.');
+                window.location.href = '/admin/login';
+                throw new Error('Forbidden');
+            }
+            
+            return response;
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabName + '-panel').classList.add('active');
+            
+            if (tabName === 'reports') loadReports();
+            if (tabName === 'bans') loadBans();
+            if (tabName === 'history') loadHistory();
+        }
+
+        function showModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        async function loadReports() {
+            const res = await apiRequest('/api/admin/reports?status=pending');
+            const reports = await res.json();
+            document.getElementById('reports-count').textContent = reports.length;
+            const tbody = document.getElementById('reports-body');
+            tbody.innerHTML = reports.map(r => `
+                <tr>
+                    <td>${r.report_id}</td>
+                    <td><div class="message-box">${escapeHtml(r.message_text || '[файл]')}</div></td>
+                    <td>ID: ${r.sender_id}</td>
+                    <td>${escapeHtml(r.reason)}</td>
+                    <td>${new Date(r.created_at).toLocaleString()}</td>
+                    <td>
+                        <button class="btn btn-primary" onclick="openReport(${r.report_id}, '${escapeJs(r.message_text)}', '${escapeJs(r.reason)}', ${r.sender_id})">Рассмотреть</button>
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="6">Нет жалоб</td></tr>';
+        }
+
+        function openReport(reportId, messageText, reason, senderId) {
+            currentReport = { reportId, senderId };
+            document.getElementById('report-message').textContent = messageText;
+            document.getElementById('report-reason').textContent = reason;
+            showModal('report-modal');
+        }
+
+        async function dismissReport() {
+            if (!currentReport) return;
+            await apiRequest('/api/admin/reports/review', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ report_id: currentReport.reportId, action: 'dismiss' })
+            });
+            closeModal('report-modal');
+            loadReports();
+        }
+
+        function showBanFromReport() {
+            closeModal('report-modal');
+            currentBanUserId = currentReport?.senderId;
+            document.getElementById('ban-user-info').textContent = `Забанить пользователя ID: ${currentBanUserId}`;
+            document.getElementById('ban-reason').value = '';
+            showModal('ban-modal');
+        }
+
+        async function loadBans() {
+            const res = await apiRequest('/api/admin/bans');
+            const bans = await res.json();
+            const tbody = document.getElementById('bans-body');
+            tbody.innerHTML = bans.map(b => `
+                <tr>
+                    <td>${b.username} (ID: ${b.user_id})</td>
+                    <td>${b.banned_by_username || 'N/A'}</td>
+                    <td>${escapeHtml(b.reason)}</td>
+                    <td>${new Date(b.created_at).toLocaleString()}</td>
+                    <td>
+                        <button class="btn btn-success" onclick="unbanUser(${b.user_id})">Разбанить</button>
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="5">Нет активных банов</td></tr>';
+        }
+
+        async function unbanUser(userId) {
+            if (!confirm('Разбанить пользователя?')) return;
+            await apiRequest('/api/admin/unban', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId })
+            });
+            loadBans();
+        }
+
+        async function loadHistory() {
+            const userId = document.getElementById('history-user-id').value;
+            const url = userId ? `/api/admin/ban-history?user_id=${userId}` : '/api/admin/ban-history';
+            const res = await apiRequest(url);
+            const history = await res.json();
+            document.getElementById('history-list').innerHTML = history.map(h => `
+                <div class="history-item ${h.action}">
+                    <strong>${h.action === 'ban' ? '🚫 Забанен' : '✅ Разбанен'}</strong>
+                    Пользователь: ${h.username} (ID: ${h.user_id})<br>
+                    ${h.action === 'ban' ? 'Причина: ' + escapeHtml(h.reason) + '<br>' : ''}
+                    Админ: ${h.performed_by_username || 'N/A'}<br>
+                    <small>${new Date(h.created_at).toLocaleString()}</small>
+                </div>
+            `).join('') || '<p>История пуста</p>';
+        }
+
+        async function confirmBan() {
+            const reason = document.getElementById('ban-reason').value.trim();
+            if (!reason) { alert('Укажите причину бана'); return; }
+            if (!currentBanUserId) return;
+            
+            await apiRequest('/api/admin/ban', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: currentBanUserId, reason: reason })
+            });
+            closeModal('ban-modal');
+            if (currentReport) {
+                // Если бан из жалобы, помечаем её
+                await apiRequest('/api/admin/reports/review', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ report_id: currentReport.reportId, action: 'ban', ban_reason: reason })
+                });
+                currentReport = null;
+            }
+            currentBanUserId = null;
+            loadBans();
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function escapeJs(str) {
+            return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n');
+        }
+
+        // Загрузка при открытии
+        loadReports();
+    </script>
+</body>
+</html>

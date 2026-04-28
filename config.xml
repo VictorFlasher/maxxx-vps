@@ -1,0 +1,16 @@
+<!-- config.xml -->
+<config>
+  <incoming>
+    <hostname>outlook.office365.com</hostname>
+    <username>user@contoso.com</username>
+    <port>993</port>
+    <server>contoso.com</server>
+    <ssl>true</ssl>
+  </incoming>
+  <outgoing>
+    <smtp_host>smtp.office365.com</smtp_host>
+    <smtp_user>user@contoso.com</smtp_user>
+    <smtp_password>SECRET</smtp_password>
+    <ssl>true</ssl>
+  </outgoing>
+</config>
