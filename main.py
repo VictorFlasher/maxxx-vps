@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 from slowapi.errors import RateLimitExceeded
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -150,7 +151,19 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Шаблоны с кэшированием в production
-templates = Jinja2Templates(directory="templates", cache_size=0)
+env = Environment(loader=FileSystemLoader("templates"), autoescape=select_autoescape(["html", "xml"]))
+env.cache = {}  # Отключаем кэш шаблонов
+
+class CustomJinja2Templates:
+    def __init__(self, env):
+        self.env = env
+
+    def TemplateResponse(self, name, context):
+        from starlette.responses import HTMLResponse
+        template = self.env.get_template(name)
+        return HTMLResponse(template.render(context))
+
+templates = CustomJinja2Templates(env)
 
 # Статика с ограничением типов файлов
 app.mount("/uploads", StaticFiles(directory="uploads", html=False), name="uploaded_files")
