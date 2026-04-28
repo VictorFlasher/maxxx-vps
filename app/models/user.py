@@ -126,13 +126,14 @@ def is_user_admin(user_id: int) -> bool:
         user_id: ID пользователя
 
     Returns:
-        True, если is_admin = true, иначе False
+        True, если role = 'admin', иначе False
     """
     conn = get_db_connection()
     cur = conn.cursor()
     try:
-        cur.execute("SELECT is_admin FROM users WHERE id = %s", (user_id,))
-        return cur.fetchone()[0] == True
+        cur.execute("SELECT role FROM users WHERE id = %s", (user_id,))
+        row = cur.fetchone()
+        return row[0] == 'admin' if row else False
     finally:
         cur.close()
         release_db_connection(conn)
@@ -174,7 +175,7 @@ def get_user_by_id(user_id: int) -> dict:
     cur = conn.cursor()
     try:
         cur.execute("""
-            SELECT id, username, email, is_admin, is_banned
+            SELECT id, username, email, role, is_banned
             FROM users
             WHERE id = %s
         """, (user_id,))
@@ -185,7 +186,7 @@ def get_user_by_id(user_id: int) -> dict:
             "id": row[0],
             "username": row[1],
             "email": row[2],
-            "is_admin": row[3],
+            "is_admin": row[3] == 'admin',
             "is_banned": row[4]
         }
     finally:
@@ -314,13 +315,13 @@ def search_users(query: str, exclude_user_id: Optional[int] = None) -> List[dict
 
 def ban_user_with_reason(target_user_id: int, admin_user_id: int, reason: str) -> bool:
     """
-    Блокирует пользователя с указанием причины и записью в историю.
+    Блокирует пользователя с указанием причины.
     Нельзя банить админов и себя.
 
     Args:
         target_user_id: ID пользователя для бана
         admin_user_id: ID администратора, выполняющего бан
-        reason: Причина бана
+        reason: Причина бана (игнорируется, т.к. нет таблицы истории)
 
     Returns:
         True, если пользователь был забанен, False — если ошибка (например, попытка забанить админа)
@@ -333,31 +334,13 @@ def ban_user_with_reason(target_user_id: int, admin_user_id: int, reason: str) -
     cur = conn.cursor()
     try:
         # Проверяем, что целевой пользователь существует и не является админом
-        cur.execute("SELECT is_admin FROM users WHERE id = %s", (target_user_id,))
+        cur.execute("SELECT role FROM users WHERE id = %s", (target_user_id,))
         row = cur.fetchone()
-        if not row or row[0]:  # Не найден или админ
+        if not row or row[0] == 'admin':  # Не найден или админ
             return False
 
-        # Начинаем транзакцию
-        # 1. Устанавливаем флаг бана
+        # Устанавливаем флаг бана
         cur.execute("UPDATE users SET is_banned = true WHERE id = %s", (target_user_id,))
-
-        # 2. Создаём запись в таблице bans (бессрочный бан)
-        # Используем ON CONFLICT для обновления существующей записи
-        cur.execute("""
-            INSERT INTO bans (user_id, banned_by, reason)
-            VALUES (%s, %s, %s)
-            ON CONFLICT (user_id) DO UPDATE SET
-                banned_by = EXCLUDED.banned_by,
-                reason = EXCLUDED.reason,
-                created_at = CURRENT_TIMESTAMP
-        """, (target_user_id, admin_user_id, reason))
-
-        # 3. Записываем в историю
-        cur.execute("""
-            INSERT INTO ban_history (user_id, action, performed_by, reason)
-            VALUES (%s, 'ban', %s, %s)
-        """, (target_user_id, admin_user_id, reason))
 
         conn.commit()
         return True
@@ -374,11 +357,11 @@ def ban_user_with_reason(target_user_id: int, admin_user_id: int, reason: str) -
 
 def unban_user(user_id: int, admin_user_id: int) -> bool:
     """
-    Разбанивает пользователя с записью в историю.
+    Разбанивает пользователя.
 
     Args:
         user_id: ID пользователя для разбана
-        admin_user_id: ID администратора, выполняющего разбан
+        admin_user_id: ID администратора, выполняющего разбан (не используется)
 
     Returns:
         True, если успешно, False иначе
@@ -392,18 +375,8 @@ def unban_user(user_id: int, admin_user_id: int) -> bool:
         if not row or not row[0]:  # Не найден или не забанен
             return False
 
-        # Начинаем транзакцию
-        # 1. Снимаем флаг бана
+        # Снимаем флаг бана
         cur.execute("UPDATE users SET is_banned = false WHERE id = %s", (user_id,))
-
-        # 2. Удаляем запись из таблицы активных банов
-        cur.execute("DELETE FROM bans WHERE user_id = %s", (user_id,))
-
-        # 3. Записываем в историю
-        cur.execute("""
-            INSERT INTO ban_history (user_id, action, performed_by)
-            VALUES (%s, 'unban', %s)
-        """, (user_id, admin_user_id))
 
         conn.commit()
         return True
@@ -420,64 +393,14 @@ def unban_user(user_id: int, admin_user_id: int) -> bool:
 
 def get_ban_history(user_id: Optional[int] = None, limit: int = 50) -> List[dict]:
     """
-    Получает историю банов для конкретного пользователя или всех пользователей.
-
-    Args:
-        user_id: ID пользователя (None для всей истории)
-        limit: Максимальное количество записей
-
-    Returns:
-        Список записей истории банов
+    Возвращает пустой список, т.к. таблица истории банов отсутствует.
     """
-    conn = get_db_connection()
-    cur = conn.cursor()
-    try:
-        if user_id:
-            cur.execute("""
-                SELECT h.history_id, h.user_id, u.username, h.action,
-                       h.performed_by, bu.username as performed_by_username,
-                       h.reason, h.created_at
-                FROM ban_history h
-                JOIN users u ON h.user_id = u.id
-                LEFT JOIN users bu ON h.performed_by = bu.id
-                WHERE h.user_id = %s
-                ORDER BY h.created_at DESC
-                LIMIT %s
-            """, (user_id, limit))
-        else:
-            cur.execute("""
-                SELECT h.history_id, h.user_id, u.username, h.action,
-                       h.performed_by, bu.username as performed_by_username,
-                       h.reason, h.created_at
-                FROM ban_history h
-                JOIN users u ON h.user_id = u.id
-                LEFT JOIN users bu ON h.performed_by = bu.id
-                ORDER BY h.created_at DESC
-                LIMIT %s
-            """, (limit,))
-
-        rows = cur.fetchall()
-        return [
-            {
-                "history_id": row[0],
-                "user_id": row[1],
-                "username": row[2],
-                "action": row[3],
-                "performed_by": row[4],
-                "performed_by_username": row[5],
-                "reason": row[6],
-                "created_at": row[7].isoformat() if row[7] else None
-            }
-            for row in rows
-        ]
-    finally:
-        cur.close()
-        release_db_connection(conn)
+    return []
 
 
 def get_active_bans() -> List[dict]:
     """
-    Получает список всех активных банов с причинами.
+    Получает список всех активных банов из таблицы users.
 
     Returns:
         Список активных банов
@@ -486,25 +409,18 @@ def get_active_bans() -> List[dict]:
     cur = conn.cursor()
     try:
         cur.execute("""
-            SELECT b.ban_id, b.user_id, u.username, b.banned_by,
-                   bu.username as banned_by_username, b.reason,
-                   b.created_at
-            FROM bans b
-            JOIN users u ON b.user_id = u.id
-            LEFT JOIN users bu ON b.banned_by = bu.id
-            ORDER BY b.created_at DESC
+            SELECT id, username, is_banned
+            FROM users
+            WHERE is_banned = true
+            ORDER BY id
         """)
 
         rows = cur.fetchall()
         return [
             {
-                "ban_id": row[0],
-                "user_id": row[1],
-                "username": row[2],
-                "banned_by": row[3],
-                "banned_by_username": row[4],
-                "reason": row[5],
-                "created_at": row[6].isoformat() if row[6] else None
+                "user_id": row[0],
+                "username": row[1],
+                "is_banned": row[2]
             }
             for row in rows
         ]

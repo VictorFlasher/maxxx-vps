@@ -45,16 +45,16 @@ if not logger.handlers:
 def get_file_type(file_bytes: bytes) -> str:
     """
     Определяет тип файла по первым байтам (magic numbers).
-    
+
     Args:
         file_bytes: Первые байты файла (минимум 8-14 байт)
-    
+
     Returns:
         Строка с MIME-типом или 'application/octet-stream' если не определено
     """
     if len(file_bytes) < 4:
         return 'application/octet-stream'
-    
+
     # Проверка по сигнатурам файлов
     if file_bytes[:4] == b'\x89PNG':
         return 'image/png'
@@ -96,7 +96,7 @@ def get_file_type(file_bytes: bytes) -> str:
         return 'text/plain'
     elif file_bytes[:2] == b'\xFF\xFE':
         return 'text/plain'
-    
+
     # Проверка на текстовые файлы (простая эвристика)
     try:
         text = file_bytes[:1024].decode('utf-8')
@@ -104,7 +104,7 @@ def get_file_type(file_bytes: bytes) -> str:
             return 'text/plain'
     except:
         pass
-    
+
     return 'application/octet-stream'
 
 from ..database import get_db_connection, release_db_connection
@@ -235,7 +235,7 @@ def _get_online_users_in_chat(chat_id: int) -> List[int]:
 async def _notify_users(chat_id: int, message: dict) -> None:
     """Рассылает сообщение всем активным участникам чата."""
     from fastapi.websockets import WebSocketState
-    
+
     members = _get_chat_members(chat_id)
     for user_id in members:
         ws = active_connections.get(chat_id, {}).get(user_id)
@@ -256,7 +256,7 @@ async def _broadcast_status_to_all_chats(user_id: int, status: str) -> None:
         status: "online" или "offline"
     """
     from fastapi.websockets import WebSocketState
-    
+
     # Находим все чаты, где состоит пользователь
     conn = get_db_connection()
     cur = conn.cursor()
@@ -267,7 +267,7 @@ async def _broadcast_status_to_all_chats(user_id: int, status: str) -> None:
             WHERE type = 'private' AND (user1_id = %s OR user2_id = %s)
         """, (user_id, user_id))
         private_chats = [row[0] for row in cur.fetchall()]
-        
+
         # Групповые чаты
         cur.execute("""
             SELECT c.id FROM chats c
@@ -275,12 +275,12 @@ async def _broadcast_status_to_all_chats(user_id: int, status: str) -> None:
             WHERE c.type = 'group' AND cm.user_id = %s
         """, (user_id,))
         group_chats = [row[0] for row in cur.fetchall()]
-        
+
         all_chats = private_chats + group_chats
     finally:
         cur.close()
         release_db_connection(conn)
-    
+
     # Отправляем уведомление во все чаты с проверкой состояния WebSocket
     for chat_id in all_chats:
         members = _get_chat_members(chat_id)
@@ -335,7 +335,7 @@ async def _notify_file_upload(chat_id: int, user_id: int, file_url: str, file_ty
     else:
         chat_type = get_chat_type(chat_id)
         await cache_set(chat_type_cache_key, chat_type, ttl=600)
-    
+
     sender_username = None
     if chat_type == "group":
         # Кэшируем username
@@ -367,7 +367,7 @@ async def _notify_file_upload(chat_id: int, user_id: int, file_url: str, file_ty
 async def websocket_endpoint(websocket: WebSocket, chat_id: int, last_message_id: Optional[int] = Query(None, alias="last_message_id")):
     """
     Обрабатывает WebSocket-соединение. Токен передаётся как ?token=...
-    
+
     Args:
         chat_id: ID чата
         last_message_id: (optional) ID последнего полученного сообщения для восстановления при reconnect
@@ -393,18 +393,18 @@ async def websocket_endpoint(websocket: WebSocket, chat_id: int, last_message_id
         return
 
     await websocket.accept()
-    
+
     logger.info(f"WebSocket подключён: user_id={user_id}, chat_id={chat_id}")
 
     # === Добавляем соединение в Redis и локальный кэш ===
     await add_connection(chat_id, user_id, INSTANCE_ID)
     await increment_ws_limit(user_id)
-    
+
     # Локальный кэш (для текущего инстанса)
     if user_id not in online_users:
         online_users[user_id] = set()
     online_users[user_id].add(chat_id)
-    
+
     if chat_id not in active_connections:
         active_connections[chat_id] = {}
     active_connections[chat_id][user_id] = websocket
@@ -426,13 +426,13 @@ async def websocket_endpoint(websocket: WebSocket, chat_id: int, last_message_id
             cur = conn.cursor()
             try:
                 cur.execute("""
-                    SELECT message_id, sender_id, text, file_path, created_at 
-                    FROM messages 
-                    WHERE chat_id = %s AND message_id > %s 
+                    SELECT message_id, sender_id, text, file_path, created_at
+                    FROM messages
+                    WHERE chat_id = %s AND message_id > %s
                     ORDER BY message_id ASC
                 """, (chat_id, last_message_id))
                 missed_messages = cur.fetchall()
-                
+
                 for msg in missed_messages:
                     msg_id, sender_id, text, file_path, created_at = msg
                     # Кэшируем тип чата
@@ -443,7 +443,7 @@ async def websocket_endpoint(websocket: WebSocket, chat_id: int, last_message_id
                     else:
                         chat_type = get_chat_type(chat_id)
                         await cache_set(chat_type_cache_key, chat_type, ttl=600)
-                    
+
                     sender_username = None
                     if chat_type == "group":
                         # Используем кэширование
@@ -454,7 +454,7 @@ async def websocket_endpoint(websocket: WebSocket, chat_id: int, last_message_id
                         else:
                             sender_username = get_username(sender_id)
                             await cache_set(cache_key, sender_username, ttl=600)
-                    
+
                     await websocket.send_json({
                         "type": "message",
                         "chat_id": chat_id,
@@ -510,7 +510,7 @@ async def websocket_endpoint(websocket: WebSocket, chat_id: int, last_message_id
                 else:
                     chat_type = get_chat_type(chat_id)
                     await cache_set(chat_type_cache_key, chat_type, ttl=600)
-                
+
                 sender_username = None
                 if chat_type == "group":
                     # Кэшируем username
@@ -552,15 +552,15 @@ async def websocket_endpoint(websocket: WebSocket, chat_id: int, last_message_id
             log_connection_event(user_id, 'disconnect')
         except Exception as e:
             logger.error(f"Ошибка логирования disconnect: {str(e)}")
-        
+
         # === Удаляем соединение из Redis и локального кэша ===
         await remove_connection(chat_id, user_id)
         await decrement_ws_limit(user_id)
         await remove_user_online(user_id, chat_id)
-        
+
         # Локальный кэш
         active_connections.get(chat_id, {}).pop(user_id, None)
-        
+
         # Удаляем чат из списка активных чатов пользователя
         if user_id in online_users:
             online_users[user_id].discard(chat_id)
@@ -612,13 +612,13 @@ def get_messages(
         )
 
     history = get_chat_history(chat_id, limit)
-    
+
     # Обновляем последнее прочитанное сообщение при загрузке истории
     from ..models.chat import update_last_read_message, get_chat_last_message_id
     last_msg_id = get_chat_last_message_id(chat_id)
     if last_msg_id:
         update_last_read_message(current_user_id, chat_id, last_msg_id)
-    
+
     return {"messages": history}
 
 @router.post("/chats/{chat_id}/upload", summary="Загрузить файл в чат")
@@ -658,14 +658,14 @@ async def upload_file(  # ← ОБЯЗАТЕЛЬНО async
     # === Валидация по magic numbers (MIME-тип) ===
     try:
         mime_type = get_file_type(contents[:1024])
-        
+
         # Проверяем, что MIME-тип разрешён
         if mime_type not in ALLOWED_MIME_TYPES:
             raise HTTPException(
                 status_code=400,
                 detail=f"Небезопасный тип файла (MIME: {mime_type})"
             )
-        
+
         # Проверяем соответствие расширения и MIME-типа
         if ext_lower not in ALLOWED_MIME_TYPES[mime_type]:
             raise HTTPException(
@@ -678,7 +678,7 @@ async def upload_file(  # ← ОБЯЗАТЕЛЬНО async
     # Сохранение с защитой от path traversal
     safe_filename = f"{uuid.uuid4().hex}{ext_lower}"
     filepath = os.path.join(UPLOAD_DIR, safe_filename)
-    
+
     # Дополнительная проверка: убеждаемся, что путь не выходит за пределы UPLOAD_DIR
     real_upload_dir = os.path.realpath(UPLOAD_DIR)
     real_filepath = os.path.realpath(filepath)
@@ -705,11 +705,11 @@ def get_my_chats(current_user_id: int = Depends(get_current_user_from_header)):
     from ..models.chat import get_unread_count
     chats = get_user_chats(current_user_id)
     unread_counts = get_unread_count(current_user_id)
-    
+
     # Добавляем информацию о непрочитанных сообщениях к каждому чату
     for chat in chats:
         chat["unread_count"] = unread_counts.get(chat["chat_id"], 0)
-    
+
     return {"chats": chats}
 
 
@@ -724,14 +724,14 @@ def invite_user_to_chat(
     Доступно только владельцу чата.
     """
     from app.models.user import get_user_by_email_or_username
-    
+
     # Находим пользователя по email или username
     user_data = get_user_by_email_or_username(request.user_email_or_username)
     if not user_data:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
-    
+
     invited_user_id = user_data[0]
-    
+
     if not add_user_to_group_chat(chat_id, invited_user_id, current_user_id):
         raise HTTPException(status_code=403, detail="Недостаточно прав или чат не найден")
     return {"status": "success"}
@@ -785,7 +785,7 @@ def search_users_endpoint(
     """
     if not q or len(q.strip()) == 0:
         raise HTTPException(status_code=400, detail="Введите строку поиска")
-    
+
     users = search_users(query=q.strip(), exclude_user_id=current_user_id)
     return {"users": users}
 
@@ -801,7 +801,7 @@ def create_private_chat_with_user(
     """
     if user2_id == current_user_id:
         raise HTTPException(status_code=400, detail="Нельзя создать чат с самим собой")
-    
+
     chat_id = create_private_chat(current_user_id, user2_id)
     return {"chat_id": chat_id}
 
@@ -816,22 +816,22 @@ def get_users_status(
     """
     from ..models.chat import get_chat_members
     from ..models.user import get_user_by_id
-    
+
     # Получаем данные текущего пользователя
     current_user = get_user_by_id(current_user_id)
-    
+
     # Получаем все чаты пользователя
     user_chats = get_user_chats(current_user_id)
-    
+
     # Собираем всех уникальных пользователей из этих чатов
     all_user_ids = set()
     for chat in user_chats:
         members = get_chat_members(chat["chat_id"])
         all_user_ids.update(members)
-    
+
     # Исключаем текущего пользователя
     all_user_ids.discard(current_user_id)
-    
+
     # Формируем результат с расширенной информацией
     users_info = []
     for user_id in all_user_ids:
@@ -847,7 +847,7 @@ def get_users_status(
             })
         except ValueError:
             continue
-    
+
     # Добавляем текущего пользователя
     users_info.append({
         "id": current_user["id"],
@@ -857,7 +857,7 @@ def get_users_status(
         "is_banned": current_user["is_banned"],
         "online": True
     })
-    
+
     return users_info
 
 
@@ -890,7 +890,7 @@ def edit_message(
     text = request.get("text", "").strip()
     if not text:
         raise HTTPException(status_code=400, detail="Сообщение не может быть пустым")
-    
+
     conn = get_db_connection()
     cur = conn.cursor()
     try:
@@ -902,30 +902,30 @@ def edit_message(
             (message_id,)
         )
         row = cur.fetchone()
-        
+
         if not row:
             raise HTTPException(status_code=404, detail="Сообщение не найдено")
-        
+
         sender_id, file_path, chat_id = row
-        
+
         if file_path:
             raise HTTPException(status_code=400, detail="Нельзя редактировать файлы")
-        
+
         if sender_id != current_user_id:
             raise HTTPException(status_code=403, detail="Можно редактировать только свои сообщения")
-        
+
         # Обновляем сообщение
         edited_at = datetime.now(timezone.utc)
         cur.execute(
             """
-            UPDATE messages 
-            SET text = %s, edited_at = %s 
+            UPDATE messages
+            SET text = %s, edited_at = %s
             WHERE message_id = %s
             """,
             (text, edited_at, message_id)
         )
         conn.commit()
-        
+
         # Отправляем уведомление всем участникам чата через WebSocket
         from ..models.chat import _get_chat_members
         members = _get_chat_members(chat_id)
@@ -939,7 +939,7 @@ def edit_message(
             from ..models.chat import get_chat_type
             chat_type = get_chat_type(chat_id)
             cache_set(chat_type_cache_key, chat_type, ttl=600)
-        
+
         sender_username = None
         if chat_type == "group":
             cache_key = f"username:{sender_id}"
@@ -950,7 +950,7 @@ def edit_message(
                 from ..models.user import get_username
                 sender_username = get_username(sender_id)
                 cache_set(cache_key, sender_username, ttl=600)
-        
+
         # Рассылаем обновление
         import asyncio
         from fastapi.websockets import WebSocketState
@@ -971,7 +971,7 @@ def edit_message(
                     }))
                 except Exception:
                     pass
-        
+
         return {"message": "Сообщение отредактировано"}
     except HTTPException:
         raise
@@ -1002,26 +1002,27 @@ def delete_message(
             (message_id,)
         )
         row = cur.fetchone()
-        
+
         if not row:
             raise HTTPException(status_code=404, detail="Сообщение не найдено")
-        
+
         sender_id, chat_id = row[0], row[1]
-        
+
         # Проверяем права (владелец или админ)
-        cur.execute("SELECT is_admin FROM users WHERE id = %s", (current_user_id,))
-        is_admin = cur.fetchone()[0]
-        
+        cur.execute("SELECT role FROM users WHERE id = %s", (current_user_id,))
+        row = cur.fetchone()
+        is_admin = row[0] == 'admin' if row else False
+
         if sender_id != current_user_id and not is_admin:
             raise HTTPException(status_code=403, detail="Нет прав на удаление этого сообщения")
-        
+
         # Сначала удаляем ссылки на сообщение из last_read_messages (чтобы не нарушить FK)
         cur.execute("DELETE FROM last_read_messages WHERE last_read_message_id = %s", (message_id,))
-        
+
         # Удаляем сообщение из БД
         cur.execute("DELETE FROM messages WHERE message_id = %s", (message_id,))
         conn.commit()
-        
+
         # Отправляем уведомление всем участникам чата через WebSocket
         from ..models.chat import _get_chat_members
         members = _get_chat_members(chat_id)
@@ -1035,7 +1036,7 @@ def delete_message(
             from ..models.chat import get_chat_type
             chat_type = get_chat_type(chat_id)
             cache_set(chat_type_cache_key, chat_type, ttl=600)
-        
+
         # Рассылаем обновление
         import asyncio
         from fastapi.websockets import WebSocketState
@@ -1053,7 +1054,7 @@ def delete_message(
                     }))
                 except Exception:
                     pass
-        
+
         return {"message": "Сообщение удалено"}
     except HTTPException:
         raise
@@ -1076,7 +1077,7 @@ def report_message(
     """
     Создаёт жалобу на сообщение.
     Жалоба сохраняется в БД для последующей модерации.
-    
+
     Нельзя пожаловаться:
     - На своё сообщение
     - На сообщение админа (админы модерируются только другими админами)
@@ -1087,10 +1088,10 @@ def report_message(
         # Проверяем, существует ли сообщение и получаем данные о чате и авторе
         cur.execute(
             """
-            SELECT m.message_id, m.sender_id, m.chat_id, c.type, u.is_admin
+            SELECT m.message_id, m.sender_id, m.chat_id, c.type, u.role
             FROM messages m
             JOIN chats c ON m.chat_id = c.id
-            JOIN users u ON m.sender_id = u.user_id
+            JOIN users u ON m.sender_id = u.id
             WHERE m.message_id = %s
             """,
             (request.message_id,)
@@ -1098,24 +1099,26 @@ def report_message(
         row = cur.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Сообщение не найдено")
-        
-        message_id, sender_id, chat_id, chat_type, sender_is_admin = row
-        
+
+        message_id, sender_id, chat_id, chat_type, sender_role = row
+        sender_is_admin = sender_role == 'admin'
+
         # Для личных чатов - нельзя пожаловаться на себя
         if chat_type == 'private' and sender_id == current_user_id:
             raise HTTPException(status_code=400, detail="Нельзя пожаловаться на своё сообщение")
-        
+
         # Нельзя пожаловаться на сообщение админа (если текущий пользователь не админ)
         if sender_is_admin:
             # Проверяем, является ли текущий пользователь админом
-            cur.execute("SELECT is_admin FROM users WHERE id = %s", (current_user_id,))
-            current_user_is_admin = cur.fetchone()[0]
+            cur.execute("SELECT role FROM users WHERE id = %s", (current_user_id,))
+            row = cur.fetchone()
+            current_user_is_admin = row[0] == 'admin' if row else False
             if not current_user_is_admin:
                 raise HTTPException(
-                    status_code=403, 
+                    status_code=403,
                     detail="Нельзя пожаловаться на сообщение администратора"
                 )
-        
+
         # Сохраняем жалобу
         cur.execute(
             """
@@ -1125,7 +1128,7 @@ def report_message(
             (request.message_id, current_user_id, request.reason)
         )
         conn.commit()
-        
+
         return {"message": "Жалоба отправлена"}
     except HTTPException:
         raise
