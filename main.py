@@ -150,7 +150,7 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Шаблоны с кэшированием в production
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="templates", cache_size=0)
 
 # Статика с ограничением типов файлов
 app.mount("/uploads", StaticFiles(directory="uploads", html=False), name="uploaded_files")
