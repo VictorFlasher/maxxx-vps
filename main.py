@@ -137,14 +137,8 @@ def _rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# Шаблоны с кэшированием в production
-# Используем Environment без кэша для избежания бага с unhashable type: 'dict'
-env = Environment(
-    loader=FileSystemLoader("templates"),
-    autoescape=select_autoescape(),
-    cache_size=0  # Отключаем кэш
-)
-templates = Jinja2Templates(env=env)
+# Шаблоны с отключенным кэшем для избежания бага с unhashable type: 'dict'
+templates = Jinja2Templates(directory="templates", cache_size=0)
 
 # Статика с ограничением типов файлов
 app.mount("/uploads", StaticFiles(directory="uploads", html=False), name="uploaded_files")
