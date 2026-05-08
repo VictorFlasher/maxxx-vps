@@ -5,3 +5,251 @@ INFO:     Started server process [5662]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     127.0.0.1:45482 - "GET / HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [5662]
+Process SpawnProcess-2:
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/server.py", line 75, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/server.py", line 79, in serve
+    await self._serve(sockets)
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/server.py", line 86, in _serve
+    config.load()
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/config.py", line 449, in load
+    self.loaded_app = import_from_string(self.app)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/workspace/main.py", line 141, in <module>
+    templates = Jinja2Templates(directory="templates", env_kwargs={"cache_size": 0, "auto_reload": True})
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/.venv/lib/python3.12/site-packages/starlette/templating.py", line 100, in __init__
+    self.env = self._create_env(directory, **env_options)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/.venv/lib/python3.12/site-packages/starlette/templating.py", line 115, in _create_env
+    return jinja2.Environment(**env_options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: Environment.__init__() got an unexpected keyword argument 'env_kwargs'
+WARNING:  WatchFiles detected changes in '.venv/lib/python3.12/site-packages/~tarlette/config.py', '.venv/lib/python3.12/site-packages/starlette/endpoints.py', '.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py', '.venv/lib/python3.12/site-packages/~tarlette/background.py', '.venv/lib/python3.12/site-packages/starlette/middleware/base.py', '.venv/lib/python3.12/site-packages/starlette/applications.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/__init__.py', '.venv/lib/python3.12/site-packages/starlette/middleware/__init__.py', '.venv/lib/python3.12/site-packages/starlette/_exception_handler.py', '.venv/lib/python3.12/site-packages/starlette/datastructures.py', '.venv/lib/python3.12/site-packages/~tarlette/routing.py', '.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py', '.venv/lib/python3.12/site-packages/starlette/middleware/trustedhost.py', '.venv/lib/python3.12/site-packages/~tarlette/requests.py', '.venv/lib/python3.12/site-packages/starlette/middleware/httpsredirect.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/authentication.py', '.venv/lib/python3.12/site-packages/starlette/schemas.py', '.venv/lib/python3.12/site-packages/~tarlette/convertors.py', '.venv/lib/python3.12/site-packages/~tarlette/formparsers.py', '.venv/lib/python3.12/site-packages/starlette/exceptions.py', '.venv/lib/python3.12/site-packages/~tarlette/authentication.py', '.venv/lib/python3.12/site-packages/~tarlette/_exception_handler.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/wsgi.py', '.venv/lib/python3.12/site-packages/starlette/responses.py', '.venv/lib/python3.12/site-packages/starlette/middleware/sessions.py', '.venv/lib/python3.12/site-packages/starlette/status.py', '.venv/lib/python3.12/site-packages/~tarlette/responses.py', '.venv/lib/python3.12/site-packages/starlette/config.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/gzip.py', '.venv/lib/python3.12/site-packages/starlette/testclient.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/sessions.py', '.venv/lib/python3.12/site-packages/~tarlette/_utils.py', '.venv/lib/python3.12/site-packages/starlette/staticfiles.py', '.venv/lib/python3.12/site-packages/starlette/templating.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/cors.py', '.venv/lib/python3.12/site-packages/~tarlette/templating.py', '.venv/lib/python3.12/site-packages/~tarlette/exceptions.py', '.venv/lib/python3.12/site-packages/starlette/middleware/cors.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/exceptions.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/base.py', '.venv/lib/python3.12/site-packages/~tarlette/__init__.py', '.venv/lib/python3.12/site-packages/starlette/requests.py', '.venv/lib/python3.12/site-packages/~tarlette/testclient.py', '.venv/lib/python3.12/site-packages/starlette/convertors.py', '.venv/lib/python3.12/site-packages/starlette/authentication.py', '.venv/lib/python3.12/site-packages/starlette/__init__.py', '.venv/lib/python3.12/site-packages/~tarlette/status.py', '.venv/lib/python3.12/site-packages/starlette/_utils.py', '.venv/lib/python3.12/site-packages/starlette/background.py', '.venv/lib/python3.12/site-packages/starlette/middleware/wsgi.py', '.venv/lib/python3.12/site-packages/~tarlette/endpoints.py', '.venv/lib/python3.12/site-packages/starlette/routing.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/httpsredirect.py', '.venv/lib/python3.12/site-packages/~tarlette/types.py', '.venv/lib/python3.12/site-packages/starlette/websockets.py', '.venv/lib/python3.12/site-packages/~tarlette/concurrency.py', '.venv/lib/python3.12/site-packages/starlette/concurrency.py', '.venv/lib/python3.12/site-packages/~tarlette/datastructures.py', '.venv/lib/python3.12/site-packages/starlette/types.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/trustedhost.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/errors.py', '.venv/lib/python3.12/site-packages/starlette/formparsers.py', '.venv/lib/python3.12/site-packages/starlette/middleware/errors.py', '.venv/lib/python3.12/site-packages/~tarlette/staticfiles.py', '.venv/lib/python3.12/site-packages/starlette/middleware/authentication.py', '.venv/lib/python3.12/site-packages/~tarlette/schemas.py', '.venv/lib/python3.12/site-packages/~tarlette/applications.py', '.venv/lib/python3.12/site-packages/~tarlette/websockets.py'. Reloading...
+Process SpawnProcess-3:
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/server.py", line 75, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/server.py", line 79, in serve
+    await self._serve(sockets)
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/server.py", line 86, in _serve
+    config.load()
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/config.py", line 449, in load
+    self.loaded_app = import_from_string(self.app)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/workspace/main.py", line 141, in <module>
+    templates = Jinja2Templates(directory="templates", env_kwargs={"cache_size": 0, "auto_reload": True})
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: Jinja2Templates.__init__() got an unexpected keyword argument 'env_kwargs'
+WARNING:  WatchFiles detected changes in '.venv/lib/python3.12/site-packages/idna/uts46data.py', '.venv/lib/python3.12/site-packages/typing_extensions.py', '.venv/lib/python3.12/site-packages/idna/package_data.py', '.venv/lib/python3.12/site-packages/idna/intranges.py', '.venv/lib/python3.12/site-packages/idna/idnadata.py'. Reloading...
+WARNING:  WatchFiles detected changes in '.venv/lib/python3.12/site-packages/anyio/streams/memory.py', '.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py', '.venv/lib/python3.12/site-packages/anyio/_core/__init__.py', '.venv/lib/python3.12/site-packages/anyio/streams/tls.py', '.venv/lib/python3.12/site-packages/anyio/_core/_subprocesses.py', '.venv/lib/python3.12/site-packages/anyio/functools.py', '.venv/lib/python3.12/site-packages/anyio/to_thread.py', '.venv/lib/python3.12/site-packages/anyio/streams/text.py', '.venv/lib/python3.12/site-packages/anyio/abc/_resources.py', '.venv/lib/python3.12/site-packages/anyio/_core/_synchronization.py', '.venv/lib/python3.12/site-packages/anyio/streams/stapled.py', '.venv/lib/python3.12/site-packages/anyio/abc/_testing.py', '.venv/lib/python3.12/site-packages/anyio/abc/_eventloop.py', '.venv/lib/python3.12/site-packages/anyio/_core/_signals.py', '.venv/lib/python3.12/site-packages/anyio/_core/_tempfile.py', '.venv/lib/python3.12/site-packages/~dna/__init__.py', '.venv/lib/python3.12/site-packages/anyio/_core/_fileio.py', '.venv/lib/python3.12/site-packages/anyio/_core/_testing.py', '.venv/lib/python3.12/site-packages/anyio/_core/_tasks.py', '.venv/lib/python3.12/site-packages/anyio/_backends/_trio.py', '.venv/lib/python3.12/site-packages/~dna/uts46data.py', '.venv/lib/python3.12/site-packages/anyio/_core/_contextmanagers.py', '.venv/lib/python3.12/site-packages/~dna/intranges.py', '.venv/lib/python3.12/site-packages/anyio/to_interpreter.py', '.venv/lib/python3.12/site-packages/anyio/streams/file.py', '.venv/lib/python3.12/site-packages/anyio/_core/_typedattr.py', '.venv/lib/python3.12/site-packages/anyio/abc/_tasks.py', '.venv/lib/python3.12/site-packages/anyio/from_thread.py', '.venv/lib/python3.12/site-packages/anyio/lowlevel.py', '.venv/lib/python3.12/site-packages/anyio/_core/_eventloop.py', '.venv/lib/python3.12/site-packages/anyio/_core/_exceptions.py', '.venv/lib/python3.12/site-packages/anyio/abc/_sockets.py', '.venv/lib/python3.12/site-packages/anyio/abc/_streams.py', '.venv/lib/python3.12/site-packages/anyio/pytest_plugin.py', '.venv/lib/python3.12/site-packages/~dna/core.py', '.venv/lib/python3.12/site-packages/anyio/_core/_sockets.py', '.venv/lib/python3.12/site-packages/anyio/abc/_subprocesses.py', '.venv/lib/python3.12/site-packages/~dna/compat.py', '.venv/lib/python3.12/site-packages/anyio/_core/_resources.py', '.venv/lib/python3.12/site-packages/anyio/_core/_streams.py', '.venv/lib/python3.12/site-packages/anyio/abc/__init__.py', '.venv/lib/python3.12/site-packages/~dna/package_data.py', '.venv/lib/python3.12/site-packages/~dna/idnadata.py', '.venv/lib/python3.12/site-packages/anyio/__init__.py', '.venv/lib/python3.12/site-packages/~dna/codec.py', '.venv/lib/python3.12/site-packages/anyio/to_process.py', '.venv/lib/python3.12/site-packages/anyio/_core/_asyncio_selector_thread.py', '.venv/lib/python3.12/site-packages/anyio/streams/buffered.py'. Reloading...
+WARNING:  WatchFiles detected changes in '.venv/lib/python3.12/site-packages/~tarlette/config.py', '.venv/lib/python3.12/site-packages/~nyio/_core/_streams.py', '.venv/lib/python3.12/site-packages/~nyio/abc/_resources.py', '.venv/lib/python3.12/site-packages/starlette/applications.py', '.venv/lib/python3.12/site-packages/~nyio/_core/_subprocesses.py', '.venv/lib/python3.12/site-packages/~nyio/_core/_signals.py', '.venv/lib/python3.12/site-packages/~nyio/abc/_testing.py', '.venv/lib/python3.12/site-packages/~nyio/functools.py', '.venv/lib/python3.12/site-packages/starlette/middleware/httpsredirect.py', '.venv/lib/python3.12/site-packages/~tarlette/convertors.py', '.venv/lib/python3.12/site-packages/starlette/schemas.py', '.venv/lib/python3.12/site-packages/starlette/exceptions.py', '.venv/lib/python3.12/site-packages/~nyio/streams/buffered.py', '.venv/lib/python3.12/site-packages/~tarlette/_exception_handler.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/wsgi.py', '.venv/lib/python3.12/site-packages/~nyio/abc/_eventloop.py', '.venv/lib/python3.12/site-packages/starlette/config.py', '.venv/lib/python3.12/site-packages/~nyio/abc/__init__.py', '.venv/lib/python3.12/site-packages/starlette/templating.py', '.venv/lib/python3.12/site-packages/~nyio/abc/_streams.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/cors.py', '.venv/lib/python3.12/site-packages/~tarlette/templating.py', '.venv/lib/python3.12/site-packages/starlette/middleware/cors.py', '.venv/lib/python3.12/site-packages/~tarlette/testclient.py', '.venv/lib/python3.12/site-packages/~nyio/from_thread.py', '.venv/lib/python3.12/site-packages/~tarlette/status.py', '.venv/lib/python3.12/site-packages/starlette/routing.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/httpsredirect.py', '.venv/lib/python3.12/site-packages/starlette/types.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/trustedhost.py', '.venv/lib/python3.12/site-packages/starlette/formparsers.py', '.venv/lib/python3.12/site-packages/starlette/middleware/errors.py', '.venv/lib/python3.12/site-packages/~tarlette/schemas.py', '.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py', '.venv/lib/python3.12/site-packages/~nyio/_core/_eventloop.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/__init__.py', '.venv/lib/python3.12/site-packages/~nyio/abc/_subprocesses.py', '.venv/lib/python3.12/site-packages/~nyio/_core/_exceptions.py', '.venv/lib/python3.12/site-packages/~nyio/lowlevel.py', '.venv/lib/python3.12/site-packages/~nyio/to_thread.py', '.venv/lib/python3.12/site-packages/~nyio/_core/_typedattr.py', '.venv/lib/python3.12/site-packages/~tarlette/responses.py', '.venv/lib/python3.12/site-packages/~nyio/abc/_tasks.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/gzip.py', '.venv/lib/python3.12/site-packages/~tarlette/_utils.py', '.venv/lib/python3.12/site-packages/~nyio/pytest_plugin.py', '.venv/lib/python3.12/site-packages/~tarlette/exceptions.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/base.py', '.venv/lib/python3.12/site-packages/starlette/requests.py', '.venv/lib/python3.12/site-packages/starlette/convertors.py', '.venv/lib/python3.12/site-packages/starlette/__init__.py', '.venv/lib/python3.12/site-packages/starlette/background.py', '.venv/lib/python3.12/site-packages/starlette/middleware/wsgi.py', '.venv/lib/python3.12/site-packages/~nyio/streams/tls.py', '.venv/lib/python3.12/site-packages/~tarlette/endpoints.py', '.venv/lib/python3.12/site-packages/~tarlette/types.py', '.venv/lib/python3.12/site-packages/starlette/websockets.py', '.venv/lib/python3.12/site-packages/starlette/middleware/authentication.py', '.venv/lib/python3.12/site-packages/~nyio/to_process.py', '.venv/lib/python3.12/site-packages/~nyio/streams/__init__.py', '.venv/lib/python3.12/site-packages/~nyio/_core/_synchronization.py', '.venv/lib/python3.12/site-packages/starlette/endpoints.py', '.venv/lib/python3.12/site-packages/~nyio/_core/__init__.py', '.venv/lib/python3.12/site-packages/starlette/_exception_handler.py', '.venv/lib/python3.12/site-packages/~tarlette/routing.py', '.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py', '.venv/lib/python3.12/site-packages/starlette/middleware/trustedhost.py', '.venv/lib/python3.12/site-packages/~nyio/abc/_sockets.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/authentication.py', '.venv/lib/python3.12/site-packages/starlette/status.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/sessions.py', '.venv/lib/python3.12/site-packages/~nyio/to_interpreter.py', '.venv/lib/python3.12/site-packages/~nyio/streams/text.py', '.venv/lib/python3.12/site-packages/~nyio/streams/memory.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/exceptions.py', '.venv/lib/python3.12/site-packages/~tarlette/__init__.py', '.venv/lib/python3.12/site-packages/~nyio/_core/_tempfile.py', '.venv/lib/python3.12/site-packages/~nyio/streams/stapled.py', '.venv/lib/python3.12/site-packages/~nyio/_core/_asyncio_selector_thread.py', '.venv/lib/python3.12/site-packages/~tarlette/concurrency.py', '.venv/lib/python3.12/site-packages/~tarlette/datastructures.py', '.venv/lib/python3.12/site-packages/~nyio/_backends/_asyncio.py', '.venv/lib/python3.12/site-packages/~tarlette/applications.py', '.venv/lib/python3.12/site-packages/~tarlette/background.py', '.venv/lib/python3.12/site-packages/starlette/middleware/base.py', '.venv/lib/python3.12/site-packages/starlette/middleware/__init__.py', '.venv/lib/python3.12/site-packages/starlette/datastructures.py', '.venv/lib/python3.12/site-packages/~nyio/_core/_resources.py', '.venv/lib/python3.12/site-packages/~tarlette/requests.py', '.venv/lib/python3.12/site-packages/~tarlette/formparsers.py', '.venv/lib/python3.12/site-packages/~tarlette/authentication.py', '.venv/lib/python3.12/site-packages/starlette/responses.py', '.venv/lib/python3.12/site-packages/starlette/middleware/sessions.py', '.venv/lib/python3.12/site-packages/starlette/testclient.py', '.venv/lib/python3.12/site-packages/starlette/staticfiles.py', '.venv/lib/python3.12/site-packages/~nyio/streams/file.py', '.venv/lib/python3.12/site-packages/~nyio/__init__.py', '.venv/lib/python3.12/site-packages/starlette/authentication.py', '.venv/lib/python3.12/site-packages/~nyio/_core/_fileio.py', '.venv/lib/python3.12/site-packages/~nyio/_core/_contextmanagers.py', '.venv/lib/python3.12/site-packages/~nyio/_core/_testing.py', '.venv/lib/python3.12/site-packages/starlette/_utils.py', '.venv/lib/python3.12/site-packages/~nyio/_core/_tasks.py', '.venv/lib/python3.12/site-packages/~nyio/_core/_sockets.py', '.venv/lib/python3.12/site-packages/starlette/concurrency.py', '.venv/lib/python3.12/site-packages/~nyio/_backends/__init__.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/errors.py', '.venv/lib/python3.12/site-packages/~nyio/_backends/_trio.py', '.venv/lib/python3.12/site-packages/~tarlette/staticfiles.py', '.venv/lib/python3.12/site-packages/~tarlette/websockets.py'. Reloading...
+Process SpawnProcess-5:
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/server.py", line 75, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/server.py", line 79, in serve
+    await self._serve(sockets)
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/server.py", line 86, in _serve
+    config.load()
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/config.py", line 449, in load
+    self.loaded_app = import_from_string(self.app)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/workspace/main.py", line 141, in <module>
+    templates = Jinja2Templates(directory="templates", env_kwargs={"cache_size": 0, "auto_reload": True})
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/.venv/lib/python3.12/site-packages/starlette/templating.py", line 100, in __init__
+    self.env = self._create_env(directory, **env_options)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/.venv/lib/python3.12/site-packages/starlette/templating.py", line 115, in _create_env
+    return jinja2.Environment(**env_options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: Environment.__init__() got an unexpected keyword argument 'env_kwargs'
+Process SpawnProcess-6:
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/server.py", line 75, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/server.py", line 79, in serve
+    await self._serve(sockets)
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/server.py", line 86, in _serve
+    config.load()
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/config.py", line 449, in load
+    self.loaded_app = import_from_string(self.app)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/workspace/main.py", line 141, in <module>
+    templates = Jinja2Templates(directory="templates", env_kwargs={"cache_size": 0, "auto_reload": True})
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/.venv/lib/python3.12/site-packages/starlette/templating.py", line 100, in __init__
+    self.env = self._create_env(directory, **env_options)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/.venv/lib/python3.12/site-packages/starlette/templating.py", line 115, in _create_env
+    return jinja2.Environment(**env_options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: Environment.__init__() got an unexpected keyword argument 'env_kwargs'
+WARNING:  WatchFiles detected changes in '.venv/lib/python3.12/site-packages/~astapi/__init__.py', '.venv/lib/python3.12/site-packages/~astapi/dependencies/__init__.py', '.venv/lib/python3.12/site-packages/~tarlette/config.py', '.venv/lib/python3.12/site-packages/fastapi/security/base.py', '.venv/lib/python3.12/site-packages/~astapi/middleware/httpsredirect.py', '.venv/lib/python3.12/site-packages/~astapi/__main__.py', '.venv/lib/python3.12/site-packages/starlette/applications.py', '.venv/lib/python3.12/site-packages/~astapi/security/http.py', '.venv/lib/python3.12/site-packages/~astapi/middleware/trustedhost.py', '.venv/lib/python3.12/site-packages/~astapi/routing.py', '.venv/lib/python3.12/site-packages/starlette/middleware/httpsredirect.py', '.venv/lib/python3.12/site-packages/~tarlette/convertors.py', '.venv/lib/python3.12/site-packages/starlette/schemas.py', '.venv/lib/python3.12/site-packages/starlette/exceptions.py', '.venv/lib/python3.12/site-packages/~tarlette/_exception_handler.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/wsgi.py', '.venv/lib/python3.12/site-packages/~astapi/sse.py', '.venv/lib/python3.12/site-packages/fastapi/staticfiles.py', '.venv/lib/python3.12/site-packages/starlette/config.py', '.venv/lib/python3.12/site-packages/~astapi/security/oauth2.py', '.venv/lib/python3.12/site-packages/~astapi/concurrency.py', '.venv/lib/python3.12/site-packages/~astapi/dependencies/utils.py', '.venv/lib/python3.12/site-packages/starlette/templating.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/cors.py', '.venv/lib/python3.12/site-packages/~tarlette/templating.py', '.venv/lib/python3.12/site-packages/~astapi/_compat/shared.py', '.venv/lib/python3.12/site-packages/starlette/middleware/cors.py', '.venv/lib/python3.12/site-packages/fastapi/security/http.py', '.venv/lib/python3.12/site-packages/fastapi/middleware/gzip.py', '.venv/lib/python3.12/site-packages/fastapi/openapi/constants.py', '.venv/lib/python3.12/site-packages/fastapi/openapi/docs.py', '.venv/lib/python3.12/site-packages/~astapi/middleware/wsgi.py', '.venv/lib/python3.12/site-packages/~tarlette/testclient.py', '.venv/lib/python3.12/site-packages/fastapi/middleware/trustedhost.py', '.venv/lib/python3.12/site-packages/~tarlette/status.py', '.venv/lib/python3.12/site-packages/~astapi/openapi/utils.py', '.venv/lib/python3.12/site-packages/starlette/routing.py', '.venv/lib/python3.12/site-packages/fastapi/middleware/__init__.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/httpsredirect.py', '.venv/lib/python3.12/site-packages/fastapi/requests.py', '.venv/lib/python3.12/site-packages/starlette/types.py', '.venv/lib/python3.12/site-packages/~astapi/security/utils.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/trustedhost.py', '.venv/lib/python3.12/site-packages/starlette/formparsers.py', '.venv/lib/python3.12/site-packages/starlette/middleware/errors.py', '.venv/lib/python3.12/site-packages/~tarlette/schemas.py', '.venv/lib/python3.12/site-packages/~astapi/security/api_key.py', '.venv/lib/python3.12/site-packages/~astapi/logger.py', '.venv/lib/python3.12/site-packages/~astapi/cli.py', '.venv/lib/python3.12/site-packages/starlette/middleware/gzip.py', '.venv/lib/python3.12/site-packages/fastapi/responses.py', '.venv/lib/python3.12/site-packages/~astapi/_compat/v2.py', '.venv/lib/python3.12/site-packages/~astapi/staticfiles.py', '.venv/lib/python3.12/site-packages/~astapi/templating.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/__init__.py', '.venv/lib/python3.12/site-packages/fastapi/exception_handlers.py', '.venv/lib/python3.12/site-packages/fastapi/middleware/cors.py', '.venv/lib/python3.12/site-packages/fastapi/datastructures.py', '.venv/lib/python3.12/site-packages/~astapi/encoders.py', '.venv/lib/python3.12/site-packages/~astapi/middleware/gzip.py', '.venv/lib/python3.12/site-packages/fastapi/middleware/wsgi.py', '.venv/lib/python3.12/site-packages/~astapi/middleware/cors.py', '.venv/lib/python3.12/site-packages/~tarlette/responses.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/gzip.py', '.venv/lib/python3.12/site-packages/~tarlette/_utils.py', '.venv/lib/python3.12/site-packages/~astapi/datastructures.py', '.venv/lib/python3.12/site-packages/~tarlette/exceptions.py', '.venv/lib/python3.12/site-packages/~astapi/exception_handlers.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/base.py', '.venv/lib/python3.12/site-packages/~astapi/security/open_id_connect_url.py', '.venv/lib/python3.12/site-packages/~astapi/openapi/models.py', '.venv/lib/python3.12/site-packages/starlette/requests.py', '.venv/lib/python3.12/site-packages/starlette/convertors.py', '.venv/lib/python3.12/site-packages/~astapi/middleware/__init__.py', '.venv/lib/python3.12/site-packages/fastapi/security/oauth2.py', '.venv/lib/python3.12/site-packages/starlette/__init__.py', '.venv/lib/python3.12/site-packages/fastapi/security/api_key.py', '.venv/lib/python3.12/site-packages/~astapi/openapi/docs.py', '.venv/lib/python3.12/site-packages/fastapi/__main__.py', '.venv/lib/python3.12/site-packages/starlette/_compat.py', '.venv/lib/python3.12/site-packages/starlette/background.py', '.venv/lib/python3.12/site-packages/starlette/middleware/wsgi.py', '.venv/lib/python3.12/site-packages/~tarlette/endpoints.py', '.venv/lib/python3.12/site-packages/fastapi/param_functions.py', '.venv/lib/python3.12/site-packages/~tarlette/types.py', '.venv/lib/python3.12/site-packages/starlette/websockets.py', '.venv/lib/python3.12/site-packages/~astapi/security/base.py', '.venv/lib/python3.12/site-packages/starlette/middleware/authentication.py', '.venv/lib/python3.12/site-packages/~astapi/background.py', '.venv/lib/python3.12/site-packages/fastapi/testclient.py', '.venv/lib/python3.12/site-packages/fastapi/security/utils.py', '.venv/lib/python3.12/site-packages/~astapi/exceptions.py', '.venv/lib/python3.12/site-packages/fastapi/middleware/httpsredirect.py', '.venv/lib/python3.12/site-packages/fastapi/websockets.py', '.venv/lib/python3.12/site-packages/~astapi/applications.py', '.venv/lib/python3.12/site-packages/starlette/endpoints.py', '.venv/lib/python3.12/site-packages/fastapi/applications.py', '.venv/lib/python3.12/site-packages/~astapi/utils.py', '.venv/lib/python3.12/site-packages/~astapi/param_functions.py', '.venv/lib/python3.12/site-packages/fastapi/templating.py', '.venv/lib/python3.12/site-packages/starlette/_exception_handler.py', '.venv/lib/python3.12/site-packages/~tarlette/routing.py', '.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py', '.venv/lib/python3.12/site-packages/starlette/middleware/trustedhost.py', '.venv/lib/python3.12/site-packages/fastapi/dependencies/models.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/authentication.py', '.venv/lib/python3.12/site-packages/fastapi/logger.py', '.venv/lib/python3.12/site-packages/starlette/status.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/sessions.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/exceptions.py', '.venv/lib/python3.12/site-packages/~astapi/_compat/__init__.py', '.venv/lib/python3.12/site-packages/~astapi/requests.py', '.venv/lib/python3.12/site-packages/~tarlette/__init__.py', '.venv/lib/python3.12/site-packages/fastapi/exceptions.py', '.venv/lib/python3.12/site-packages/~astapi/middleware/asyncexitstack.py', '.venv/lib/python3.12/site-packages/fastapi/types.py', '.venv/lib/python3.12/site-packages/~astapi/testclient.py', '.venv/lib/python3.12/site-packages/~tarlette/concurrency.py', '.venv/lib/python3.12/site-packages/~tarlette/datastructures.py', '.venv/lib/python3.12/site-packages/~astapi/dependencies/models.py', '.venv/lib/python3.12/site-packages/fastapi/__init__.py', '.venv/lib/python3.12/site-packages/~astapi/openapi/constants.py', '.venv/lib/python3.12/site-packages/fastapi/concurrency.py', '.venv/lib/python3.12/site-packages/~tarlette/applications.py', '.venv/lib/python3.12/site-packages/~tarlette/background.py', '.venv/lib/python3.12/site-packages/starlette/middleware/base.py', '.venv/lib/python3.12/site-packages/~astapi/openapi/__init__.py', '.venv/lib/python3.12/site-packages/starlette/middleware/__init__.py', '.venv/lib/python3.12/site-packages/~astapi/websockets.py', '.venv/lib/python3.12/site-packages/starlette/datastructures.py', '.venv/lib/python3.12/site-packages/fastapi/encoders.py', '.venv/lib/python3.12/site-packages/~tarlette/requests.py', '.venv/lib/python3.12/site-packages/fastapi/security/open_id_connect_url.py', '.venv/lib/python3.12/site-packages/~tarlette/formparsers.py', '.venv/lib/python3.12/site-packages/~tarlette/authentication.py', '.venv/lib/python3.12/site-packages/starlette/responses.py', '.venv/lib/python3.12/site-packages/starlette/middleware/sessions.py', '.venv/lib/python3.12/site-packages/starlette/testclient.py', '.venv/lib/python3.12/site-packages/fastapi/openapi/models.py', '.venv/lib/python3.12/site-packages/~astapi/params.py', '.venv/lib/python3.12/site-packages/starlette/staticfiles.py', '.venv/lib/python3.12/site-packages/fastapi/background.py', '.venv/lib/python3.12/site-packages/fastapi/dependencies/utils.py', '.venv/lib/python3.12/site-packages/fastapi/cli.py', '.venv/lib/python3.12/site-packages/~astapi/types.py', '.venv/lib/python3.12/site-packages/fastapi/utils.py', '.venv/lib/python3.12/site-packages/starlette/authentication.py', '.venv/lib/python3.12/site-packages/fastapi/_compat.py', '.venv/lib/python3.12/site-packages/fastapi/openapi/utils.py', '.venv/lib/python3.12/site-packages/~astapi/security/__init__.py', '.venv/lib/python3.12/site-packages/fastapi/params.py', '.venv/lib/python3.12/site-packages/fastapi/security/__init__.py', '.venv/lib/python3.12/site-packages/starlette/_utils.py', '.venv/lib/python3.12/site-packages/starlette/concurrency.py', '.venv/lib/python3.12/site-packages/~tarlette/middleware/errors.py', '.venv/lib/python3.12/site-packages/~tarlette/staticfiles.py', '.venv/lib/python3.12/site-packages/~astapi/responses.py', '.venv/lib/python3.12/site-packages/fastapi/routing.py', '.venv/lib/python3.12/site-packages/~tarlette/websockets.py'. Reloading...
+Process SpawnProcess-7:
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/usr/local/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/server.py", line 75, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/server.py", line 79, in serve
+    await self._serve(sockets)
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/server.py", line 86, in _serve
+    config.load()
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/config.py", line 449, in load
+    self.loaded_app = import_from_string(self.app)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/.venv/lib/python3.12/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/workspace/main.py", line 141, in <module>
+    templates = Jinja2Templates(directory="templates", env_kwargs={"cache_size": 0, "auto_reload": True})
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/.venv/lib/python3.12/site-packages/starlette/templating.py", line 100, in __init__
+    self.env = self._create_env(directory, **env_options)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/.venv/lib/python3.12/site-packages/starlette/templating.py", line 115, in _create_env
+    return jinja2.Environment(**env_options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: Environment.__init__() got an unexpected keyword argument 'env_kwargs'
+WARNING:  WatchFiles detected changes in 'main.py'. Reloading...
+INFO:     Started server process [6244]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [6244]
+INFO:     Stopping reloader process [5660]
