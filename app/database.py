@@ -9,19 +9,15 @@ logger = logging.getLogger(__name__)
 # === Конфигурация подключения ===
 # Параметры подключения берутся из переменных окружения или используются значения по умолчанию
 DB_CONFIG = {
-    "host": os.getenv("DB_HOST", "localhost"),
-    "port": int(os.getenv("DB_PORT", 5432)),
-    "dbname": os.getenv("DB_NAME", "postgres"),
-    "user": os.getenv("DB_USER", "postgres"),
+    "host": os.getenv("DB_HOST"),
+    "port": int(os.getenv("DB_PORT")),
+    "dbname": os.getenv("DB_NAME"),
+    "user": os.getenv("DB_USER"),
     "password": os.getenv("DB_PASS"),
 }
 
-# Проверка: пароль должен быть установлен через переменную окружения
-if not os.getenv("DB_PASS"):
-    raise RuntimeError("Пароль базы данных должен быть установлен через переменную окружения DB_PASS!")
-
 # Имя схемы берётся из переменной окружения
-SCHEMA_NAME = os.getenv("DB_SCHEMA", "maxxx_local")
+SCHEMA_NAME = os.getenv("DB_SCHEMA")
 
 
 def get_schema_name() -> str:
