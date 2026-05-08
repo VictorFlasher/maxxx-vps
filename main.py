@@ -138,7 +138,8 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Шаблоны с отключенным кэшем для избежания бага с unhashable type: 'dict'
-templates = Jinja2Templates(directory="templates", cache_size=0)
+templates = Jinja2Templates(directory="templates")
+templates.env.cache = {}  # Отключаем кэш шаблонов
 
 # Статика с ограничением типов файлов
 app.mount("/uploads", StaticFiles(directory="uploads", html=False), name="uploaded_files")
