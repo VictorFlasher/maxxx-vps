@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 from slowapi.errors import RateLimitExceeded
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -137,7 +138,13 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Шаблоны с кэшированием в production
-templates = Jinja2Templates(directory="templates")
+# Используем Environment без кэша для избежания бага с unhashable type: 'dict'
+env = Environment(
+    loader=FileSystemLoader("templates"),
+    autoescape=select_autoescape(),
+    cache_size=0  # Отключаем кэш
+)
+templates = Jinja2Templates(env=env)
 
 # Статика с ограничением типов файлов
 app.mount("/uploads", StaticFiles(directory="uploads", html=False), name="uploaded_files")
