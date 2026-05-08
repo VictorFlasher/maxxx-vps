@@ -43,7 +43,7 @@ def _get_chat_members(chat_id: int) -> List[int]:
     cur = conn.cursor()
     try:
         # Сначала проверяем тип чата
-        cur.execute("SELECT is_group, created_by FROM maxxx_local.chats WHERE chat_id = %s", (chat_id,))
+        cur.execute("SELECT is_group, created_by FROM maxxx_vps.chats WHERE chat_id = %s", (chat_id,))
         row = cur.fetchone()
         if not row:
             return []
@@ -53,14 +53,14 @@ def _get_chat_members(chat_id: int) -> List[int]:
         if not is_group:
             # Личный чат - участники это создатель и второй пользователь
             # Для личных чатов created_by = user1_id, а user2_id хранится в chat_members
-            cur.execute("SELECT user_id FROM maxxx_local.chat_members WHERE chat_id = %s", (chat_id,))
+            cur.execute("SELECT user_id FROM maxxx_vps.chat_members WHERE chat_id = %s", (chat_id,))
             members = [r[0] for r in cur.fetchall()]
             if created_by and created_by not in members:
                 members.insert(0, created_by)
             return members
         else:
             # Групповой чат - все участники из chat_members
-            cur.execute("SELECT user_id FROM maxxx_local.chat_members WHERE chat_id = %s", (chat_id,))
+            cur.execute("SELECT user_id FROM maxxx_vps.chat_members WHERE chat_id = %s", (chat_id,))
             return [r[0] for r in cur.fetchall()]
     finally:
         cur.close()
@@ -107,11 +107,11 @@ def create_private_chat(user1_id: int, user2_id: int) -> int:
         # Ищем существующий личный чат, где оба пользователя являются участниками
         # Проверяем через chat_members + created_by
         cur.execute("""
-            SELECT c.chat_id FROM maxxx_local.chats c
+            SELECT c.chat_id FROM maxxx_vps.chats c
             WHERE c.is_group = FALSE
               AND c.created_by IN (%s, %s)
               AND EXISTS (
-                  SELECT 1 FROM maxxx_local.chat_members cm 
+                  SELECT 1 FROM maxxx_vps.chat_members cm 
                   WHERE cm.chat_id = c.chat_id 
                     AND cm.user_id IN (%s, %s)
               )
@@ -121,7 +121,7 @@ def create_private_chat(user1_id: int, user2_id: int) -> int:
         if row:
             # Дополнительно проверим, что в чате ровно 2 участника (с учётом created_by)
             chat_id = row[0]
-            cur.execute("SELECT COUNT(*) FROM maxxx_local.chat_members WHERE chat_id = %s", (chat_id,))
+            cur.execute("SELECT COUNT(*) FROM maxxx_vps.chat_members WHERE chat_id = %s", (chat_id,))
             member_count = cur.fetchone()[0]
             # created_by + члены из chat_members должны дать 2 уникальных пользователя
             if member_count == 1:  # один в chat_members + created_by = 2
@@ -149,11 +149,11 @@ def create_private_chat(user1_id: int, user2_id: int) -> int:
         conn.rollback()
         # Повторная попытка найти чат (гонка условий)
         cur.execute("""
-            SELECT c.chat_id FROM maxxx_local.chats c
+            SELECT c.chat_id FROM maxxx_vps.chats c
             WHERE c.is_group = FALSE
               AND c.created_by IN (%s, %s)
               AND EXISTS (
-                  SELECT 1 FROM maxxx_local.chat_members cm 
+                  SELECT 1 FROM maxxx_vps.chat_members cm 
                   WHERE cm.chat_id = c.chat_id 
                     AND cm.user_id IN (%s, %s)
               )
@@ -214,7 +214,7 @@ def is_user_in_chat(chat_id: int, user_id: int) -> bool:
     cur = conn.cursor()
     try:
         # Сначала определим тип чата
-        cur.execute("SELECT is_group, created_by FROM maxxx_local.chats WHERE chat_id = %s", (chat_id,))
+        cur.execute("SELECT is_group, created_by FROM maxxx_vps.chats WHERE chat_id = %s", (chat_id,))
         row = cur.fetchone()
         if not row:
             return False
@@ -229,14 +229,14 @@ def is_user_in_chat(chat_id: int, user_id: int) -> bool:
             
             # Проверяем, есть ли пользователь в chat_members для этого чата
             cur.execute(
-                "SELECT 1 FROM maxxx_local.chat_members WHERE chat_id = %s AND user_id = %s",
+                "SELECT 1 FROM maxxx_vps.chat_members WHERE chat_id = %s AND user_id = %s",
                 (chat_id, user_id)
             )
             return cur.fetchone() is not None
         else:
             # Групповой чат
             cur.execute(
-                "SELECT 1 FROM maxxx_local.chat_members WHERE chat_id = %s AND user_id = %s",
+                "SELECT 1 FROM maxxx_vps.chat_members WHERE chat_id = %s AND user_id = %s",
                 (chat_id, user_id)
             )
             return cur.fetchone() is not None
@@ -249,7 +249,7 @@ def get_chat_history(chat_id: int, limit: int = 50) -> List[Dict[str, Any]]:
     cur = conn.cursor()
     try:
         # Сначала определим тип чата
-        cur.execute("SELECT is_group FROM maxxx_local.chats WHERE chat_id = %s", (chat_id,))
+        cur.execute("SELECT is_group FROM maxxx_vps.chats WHERE chat_id = %s", (chat_id,))
         row = cur.fetchone()
         if not row:
             return []
@@ -258,8 +258,8 @@ def get_chat_history(chat_id: int, limit: int = 50) -> List[Dict[str, Any]]:
         
         cur.execute("""
             SELECT m.message_id, m.sender_id, u.username, m.content, m.created_at, m.is_edited, m.edited_at, m.file_path, m.file_type, m.original_filename
-            FROM maxxx_local.messages m
-            JOIN maxxx_local.users u ON m.sender_id = u.user_id
+            FROM maxxx_vps.messages m
+            JOIN maxxx_vps.users u ON m.sender_id = u.user_id
             WHERE m.chat_id = %s
             ORDER BY m.created_at ASC
             LIMIT %s
@@ -313,10 +313,10 @@ def get_user_chats(user_id: int) -> List[Dict[str, Any]]:
         cur.execute("""
             SELECT c.chat_id, c.created_by, cm.user_id as member_id, 
                    u1.username as creator_name, u2.username as member_name
-            FROM maxxx_local.chats c
-            LEFT JOIN maxxx_local.chat_members cm ON c.chat_id = cm.chat_id
-            LEFT JOIN maxxx_local.users u1 ON c.created_by = u1.user_id
-            LEFT JOIN maxxx_local.users u2 ON cm.user_id = u2.user_id
+            FROM maxxx_vps.chats c
+            LEFT JOIN maxxx_vps.chat_members cm ON c.chat_id = cm.chat_id
+            LEFT JOIN maxxx_vps.users u1 ON c.created_by = u1.user_id
+            LEFT JOIN maxxx_vps.users u2 ON cm.user_id = u2.user_id
             WHERE c.is_group = FALSE 
               AND (c.created_by = %s OR cm.user_id = %s)
         """, (user_id, user_id))
@@ -349,8 +349,8 @@ def get_user_chats(user_id: int) -> List[Dict[str, Any]]:
         # Групповые чаты
         cur.execute("""
             SELECT c.chat_id, c.name
-            FROM maxxx_local.chats c
-            JOIN maxxx_local.chat_members cm ON c.chat_id = cm.chat_id
+            FROM maxxx_vps.chats c
+            JOIN maxxx_vps.chat_members cm ON c.chat_id = cm.chat_id
             WHERE c.is_group = TRUE AND cm.user_id = %s
         """, (user_id,))
 
@@ -376,8 +376,8 @@ def add_user_to_group_chat(chat_id: int, user_id: int, inviter_id: int) -> bool:
     try:
         # Проверяем, что чат групповой и inviter является участником
         cur.execute("""
-            SELECT 1 FROM maxxx_local.chats c
-            JOIN maxxx_local.chat_members cm ON c.chat_id = cm.chat_id
+            SELECT 1 FROM maxxx_vps.chats c
+            JOIN maxxx_vps.chat_members cm ON c.chat_id = cm.chat_id
             WHERE c.chat_id = %s AND c.is_group = TRUE AND cm.user_id = %s
         """, (chat_id, inviter_id))
         row = cur.fetchone()
@@ -410,7 +410,7 @@ def remove_user_from_group_chat(chat_id: int, user_id: int, remover_id: int) -> 
     cur = conn.cursor()
     try:
         # Проверяем, что чат групповой
-        cur.execute("SELECT created_by FROM maxxx_local.chats WHERE chat_id = %s AND is_group = TRUE", (chat_id,))
+        cur.execute("SELECT created_by FROM maxxx_vps.chats WHERE chat_id = %s AND is_group = TRUE", (chat_id,))
         row = cur.fetchone()
         if not row:
             return False
@@ -421,20 +421,20 @@ def remove_user_from_group_chat(chat_id: int, user_id: int, remover_id: int) -> 
             return False
 
         # Удаляем участника
-        cur.execute("DELETE FROM maxxx_local.chat_members WHERE chat_id = %s AND user_id = %s", (chat_id, user_id))
+        cur.execute("DELETE FROM maxxx_vps.chat_members WHERE chat_id = %s AND user_id = %s", (chat_id, user_id))
         
         # Проверяем, остались ли участники
-        cur.execute("SELECT COUNT(*) FROM maxxx_local.chat_members WHERE chat_id = %s", (chat_id,))
+        cur.execute("SELECT COUNT(*) FROM maxxx_vps.chat_members WHERE chat_id = %s", (chat_id,))
         remaining_count = cur.fetchone()[0]
         
         # Если участников не осталось - удаляем чат и все сообщения
         if remaining_count == 0:
             # Получаем все файлы перед удалением сообщений
-            cur.execute("SELECT file_path FROM maxxx_local.messages WHERE chat_id = %s AND file_path IS NOT NULL", (chat_id,))
+            cur.execute("SELECT file_path FROM maxxx_vps.messages WHERE chat_id = %s AND file_path IS NOT NULL", (chat_id,))
             file_paths = [row[0] for row in cur.fetchall()]
             
-            cur.execute("DELETE FROM maxxx_local.messages WHERE chat_id = %s", (chat_id,))
-            cur.execute("DELETE FROM maxxx_local.chats WHERE chat_id = %s", (chat_id,))
+            cur.execute("DELETE FROM maxxx_vps.messages WHERE chat_id = %s", (chat_id,))
+            cur.execute("DELETE FROM maxxx_vps.chats WHERE chat_id = %s", (chat_id,))
             
             conn.commit()
             
@@ -472,7 +472,7 @@ def delete_private_chat(chat_id: int, user_id: int) -> bool:
     try:
         # Проверяем, что чат существует, личный и пользователь — участник
         cur.execute("""
-            SELECT created_by FROM maxxx_local.chats
+            SELECT created_by FROM maxxx_vps.chats
             WHERE chat_id = %s AND is_group = FALSE
         """, (chat_id,))
         row = cur.fetchone()
@@ -482,21 +482,21 @@ def delete_private_chat(chat_id: int, user_id: int) -> bool:
         created_by = row[0]
         
         # Проверяем, что пользователь - создатель или участник
-        cur.execute("SELECT 1 FROM maxxx_local.chat_members WHERE chat_id = %s AND user_id = %s", (chat_id, user_id))
+        cur.execute("SELECT 1 FROM maxxx_vps.chat_members WHERE chat_id = %s AND user_id = %s", (chat_id, user_id))
         is_member = cur.fetchone() is not None
         
         if user_id != created_by and not is_member:
             return False
 
         # 1. Получаем все файлы перед удалением сообщений
-        cur.execute("SELECT file_path FROM maxxx_local.messages WHERE chat_id = %s AND file_path IS NOT NULL", (chat_id,))
+        cur.execute("SELECT file_path FROM maxxx_vps.messages WHERE chat_id = %s AND file_path IS NOT NULL", (chat_id,))
         file_paths = [row[0] for row in cur.fetchall()]
         
         # 2. Удаляем все сообщения в чате
-        cur.execute("DELETE FROM maxxx_local.messages WHERE chat_id = %s", (chat_id,))
+        cur.execute("DELETE FROM maxxx_vps.messages WHERE chat_id = %s", (chat_id,))
         
         # 3. Удаляем сам чат
-        cur.execute("DELETE FROM maxxx_local.chats WHERE chat_id = %s", (chat_id,))
+        cur.execute("DELETE FROM maxxx_vps.chats WHERE chat_id = %s", (chat_id,))
         
         conn.commit()
         
@@ -526,7 +526,7 @@ def get_chat_type(chat_id: int) -> str:
     conn = get_db_connection()
     cur = conn.cursor()
     try:
-        cur.execute("SELECT is_group FROM maxxx_local.chats WHERE chat_id = %s", (chat_id,))
+        cur.execute("SELECT is_group FROM maxxx_vps.chats WHERE chat_id = %s", (chat_id,))
         row = cur.fetchone()
         if row is None:
             return None
@@ -609,13 +609,13 @@ def get_unread_count(user_id: int) -> Dict[int, int]:
     try:
         # Получаем все чаты пользователя
         cur.execute("""
-            SELECT c.chat_id FROM maxxx_local.chats c
+            SELECT c.chat_id FROM maxxx_vps.chats c
             WHERE c.is_group = FALSE AND (c.created_by = %s OR EXISTS (
-                SELECT 1 FROM maxxx_local.chat_members cm WHERE cm.chat_id = c.chat_id AND cm.user_id = %s
+                SELECT 1 FROM maxxx_vps.chat_members cm WHERE cm.chat_id = c.chat_id AND cm.user_id = %s
             ))
             UNION
-            SELECT c.chat_id FROM maxxx_local.chats c
-            JOIN maxxx_local.chat_members cm ON c.chat_id = cm.chat_id
+            SELECT c.chat_id FROM maxxx_vps.chats c
+            JOIN maxxx_vps.chat_members cm ON c.chat_id = cm.chat_id
             WHERE c.is_group = TRUE AND cm.user_id = %s
         """, (user_id, user_id, user_id))
         
@@ -626,7 +626,7 @@ def get_unread_count(user_id: int) -> Dict[int, int]:
             # Считаем все сообщения от других пользователей как непрочитанные
             # (упрощённая версия без отслеживания прочитанных)
             cur.execute("""
-                SELECT COUNT(*) FROM maxxx_local.messages
+                SELECT COUNT(*) FROM maxxx_vps.messages
                 WHERE chat_id = %s AND sender_id != %s
             """, (chat_id, user_id))
             
@@ -654,7 +654,7 @@ def get_chat_last_message_id(chat_id: int) -> Optional[int]:
     cur = conn.cursor()
     try:
         cur.execute("""
-            SELECT message_id FROM maxxx_local.messages
+            SELECT message_id FROM maxxx_vps.messages
             WHERE chat_id = %s
             ORDER BY message_id DESC
             LIMIT 1
@@ -683,7 +683,7 @@ def delete_group_chat(chat_id: int, user_id: int) -> bool:
     try:
         # Проверяем, что чат существует, групповой и пользователь - создатель
         cur.execute("""
-            SELECT created_by FROM maxxx_local.chats
+            SELECT created_by FROM maxxx_vps.chats
             WHERE chat_id = %s AND is_group = TRUE
         """, (chat_id,))
         row = cur.fetchone()
@@ -696,17 +696,17 @@ def delete_group_chat(chat_id: int, user_id: int) -> bool:
             return False
 
         # 1. Получаем все файлы перед удалением сообщений
-        cur.execute("SELECT file_path FROM maxxx_local.messages WHERE chat_id = %s AND file_path IS NOT NULL", (chat_id,))
+        cur.execute("SELECT file_path FROM maxxx_vps.messages WHERE chat_id = %s AND file_path IS NOT NULL", (chat_id,))
         file_paths = [row[0] for row in cur.fetchall()]
         
         # 2. Удаляем всех участников из chat_members
-        cur.execute("DELETE FROM maxxx_local.chat_members WHERE chat_id = %s", (chat_id,))
+        cur.execute("DELETE FROM maxxx_vps.chat_members WHERE chat_id = %s", (chat_id,))
         
         # 3. Удаляем все сообщения в чате
-        cur.execute("DELETE FROM maxxx_local.messages WHERE chat_id = %s", (chat_id,))
+        cur.execute("DELETE FROM maxxx_vps.messages WHERE chat_id = %s", (chat_id,))
         
         # 4. Удаляем сам чат
-        cur.execute("DELETE FROM maxxx_local.chats WHERE chat_id = %s", (chat_id,))
+        cur.execute("DELETE FROM maxxx_vps.chats WHERE chat_id = %s", (chat_id,))
         
         conn.commit()
         

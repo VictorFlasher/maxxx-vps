@@ -250,18 +250,18 @@ async def _broadcast_status_to_all_chats(user_id: int, status: str) -> None:
     try:
         # Личные чаты: где пользователь - создатель или участник в chat_members
         cur.execute("""
-            SELECT c.chat_id FROM maxxx_local.chats c
+            SELECT c.chat_id FROM maxxx_vps.chats c
             WHERE c.is_group = FALSE 
               AND (c.created_by = %s OR EXISTS (
-                  SELECT 1 FROM maxxx_local.chat_members cm WHERE cm.chat_id = c.chat_id AND cm.user_id = %s
+                  SELECT 1 FROM maxxx_vps.chat_members cm WHERE cm.chat_id = c.chat_id AND cm.user_id = %s
               ))
         """, (user_id, user_id))
         private_chats = [row[0] for row in cur.fetchall()]
         
         # Групповые чаты
         cur.execute("""
-            SELECT c.chat_id FROM maxxx_local.chats c
-            JOIN maxxx_local.chat_members cm ON c.chat_id = cm.chat_id
+            SELECT c.chat_id FROM maxxx_vps.chats c
+            JOIN maxxx_vps.chat_members cm ON c.chat_id = cm.chat_id
             WHERE c.is_group = TRUE AND cm.user_id = %s
         """, (user_id,))
         group_chats = [row[0] for row in cur.fetchall()]
@@ -471,7 +471,7 @@ async def websocket_endpoint(websocket: WebSocket, chat_id: int, last_message_id
             try:
                 cur.execute("""
                     SELECT message_id, sender_id, content, file_path, file_type, original_filename, created_at 
-                    FROM maxxx_local.messages 
+                    FROM maxxx_vps.messages 
                     WHERE chat_id = %s AND message_id > %s 
                     ORDER BY message_id ASC
                 """, (chat_id, last_message_id))
@@ -814,7 +814,7 @@ def delete_chat_endpoint(
     cur = conn.cursor()
     try:
         # Определяем тип чата
-        cur.execute("SELECT is_group, created_by FROM maxxx_local.chats WHERE chat_id = %s", (chat_id,))
+        cur.execute("SELECT is_group, created_by FROM maxxx_vps.chats WHERE chat_id = %s", (chat_id,))
         row = cur.fetchone()
         
         if not row:
@@ -979,7 +979,7 @@ def edit_message(
         # Проверяем, существует ли сообщение и принадлежит ли оно пользователю
         cur.execute(
             """
-            SELECT sender_id, file_path, chat_id FROM maxxx_local.messages WHERE message_id = %s
+            SELECT sender_id, file_path, chat_id FROM maxxx_vps.messages WHERE message_id = %s
             """,
             (message_id,)
         )
@@ -1079,7 +1079,7 @@ def delete_message(
         # Проверяем, существует ли сообщение и получаем данные о файле
         cur.execute(
             """
-            SELECT sender_id, chat_id, file_path FROM maxxx_local.messages WHERE message_id = %s
+            SELECT sender_id, chat_id, file_path FROM maxxx_vps.messages WHERE message_id = %s
             """,
             (message_id,)
         )
@@ -1091,7 +1091,7 @@ def delete_message(
         sender_id, chat_id, file_path = row
         
         # Проверяем права (владелец или админ)
-        cur.execute("SELECT is_admin FROM maxxx_local.users WHERE user_id = %s", (current_user_id,))
+        cur.execute("SELECT is_admin FROM maxxx_vps.users WHERE user_id = %s", (current_user_id,))
         is_admin_result = cur.fetchone()
         is_admin = is_admin_result[0] if is_admin_result else False
         
@@ -1099,7 +1099,7 @@ def delete_message(
             raise HTTPException(status_code=403, detail="Нет прав на удаление этого сообщения")
         
         # Удаляем сообщение из БД
-        cur.execute("DELETE FROM maxxx_local.messages WHERE message_id = %s", (message_id,))
+        cur.execute("DELETE FROM maxxx_vps.messages WHERE message_id = %s", (message_id,))
         conn.commit()
         
         # Удаляем файл с диска, если он был прикреплён
@@ -1189,9 +1189,9 @@ def report_message(
         cur.execute(
             """
             SELECT m.message_id, m.sender_id, m.chat_id, c.is_group, u.is_admin
-            FROM maxxx_local.messages m
-            JOIN maxxx_local.chats c ON m.chat_id = c.chat_id
-            JOIN maxxx_local.users u ON m.sender_id = u.user_id
+            FROM maxxx_vps.messages m
+            JOIN maxxx_vps.chats c ON m.chat_id = c.chat_id
+            JOIN maxxx_vps.users u ON m.sender_id = u.user_id
             WHERE m.message_id = %s
             """,
             (request.message_id,)
@@ -1212,7 +1212,7 @@ def report_message(
         # Сохраняем жалобу (теперь можно жаловаться на всех, включая админов)
         cur.execute(
             """
-            INSERT INTO maxxx_local.message_reports (message_id, reporter_id, reason, created_at)
+            INSERT INTO maxxx_vps.message_reports (message_id, reporter_id, reason, created_at)
             VALUES (%s, %s, %s, NOW())
             """,
             (request.message_id, current_user_id, request.reason)

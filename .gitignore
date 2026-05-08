@@ -1,9 +1,24 @@
 ```
-# Compiled Python files
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
-# Log files
+# Logs and temp files
 *.log
-server.log
+*.tmp
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+
+# Dependencies
+.venv/
+venv/
 ```

@@ -28,7 +28,7 @@ print("\nСтруктура messages:")
 cur.execute("""
     SELECT column_name, data_type 
     FROM information_schema.columns 
-    WHERE table_schema = 'maxxx_local' AND table_name = 'messages'
+    WHERE table_schema = 'maxxx_vps' AND table_name = 'messages'
     ORDER BY ordinal_position
 """)
 for row in cur.fetchall():
@@ -39,7 +39,7 @@ print("\nСтруктура message_reports:")
 cur.execute("""
     SELECT column_name, data_type 
     FROM information_schema.columns 
-    WHERE table_schema = 'maxxx_local' AND table_name = 'message_reports'
+    WHERE table_schema = 'maxxx_vps' AND table_name = 'message_reports'
     ORDER BY ordinal_position
 """)
 for row in cur.fetchall():

@@ -88,7 +88,7 @@ def get_user_by_email(email: str) -> Optional[Tuple[int, str, str]]:
     cur = conn.cursor()
     try:
         cur.execute(
-            "SELECT user_id, email, password_hash FROM maxxx_local.users WHERE email = %s",
+            "SELECT user_id, email, password_hash FROM maxxx_vps.users WHERE email = %s",
             (email,),
         )
         return cur.fetchone()
@@ -111,7 +111,7 @@ def get_user_by_email_or_username(email_or_username: str) -> Optional[Tuple[int,
     cur = conn.cursor()
     try:
         cur.execute(
-            """SELECT user_id, email, username FROM maxxx_local.users 
+            """SELECT user_id, email, username FROM maxxx_vps.users 
                WHERE email = %s OR username = %s""",
             (email_or_username, email_or_username),
         )
@@ -134,7 +134,7 @@ def is_user_admin(user_id: int) -> bool:
     conn = get_db_connection()
     cur = conn.cursor()
     try:
-        cur.execute("SELECT is_admin FROM maxxx_local.users WHERE user_id = %s", (user_id,))
+        cur.execute("SELECT is_admin FROM maxxx_vps.users WHERE user_id = %s", (user_id,))
         return cur.fetchone()[0] == True
     finally:
         cur.close()
@@ -180,7 +180,7 @@ def get_user_by_id(user_id: int) -> Optional[dict]:
         cur = conn.cursor()
         cur.execute("""
             SELECT user_id, username, email, is_admin, is_banned
-            FROM maxxx_local.users
+            FROM maxxx_vps.users
             WHERE user_id = %s
         """, (user_id,))
         row = cur.fetchone()
@@ -206,7 +206,7 @@ def get_username(user_id: int) -> str:
     conn = get_db_connection()
     cur = conn.cursor()
     try:
-        cur.execute("SELECT username FROM maxxx_local.users WHERE user_id = %s", (user_id,))
+        cur.execute("SELECT username FROM maxxx_vps.users WHERE user_id = %s", (user_id,))
         row = cur.fetchone()
         return row[0] if row else f"Пользователь {user_id}"
     finally:
@@ -258,14 +258,14 @@ def get_all_users(exclude_user_id: Optional[int] = None) -> List[dict]:
         if exclude_user_id:
             cur.execute("""
                 SELECT user_id, username, email
-                FROM maxxx_local.users
+                FROM maxxx_vps.users
                 WHERE user_id != %s
                 ORDER BY username
             """, (exclude_user_id,))
         else:
             cur.execute("""
                 SELECT user_id, username, email
-                FROM maxxx_local.users
+                FROM maxxx_vps.users
                 ORDER BY username
             """)
         
@@ -298,7 +298,7 @@ def search_users(query: str, exclude_user_id: Optional[int] = None) -> List[dict
         if exclude_user_id:
             cur.execute("""
                 SELECT user_id, username, email
-                FROM maxxx_local.users
+                FROM maxxx_vps.users
                 WHERE (username ILIKE %s OR email ILIKE %s)
                   AND user_id != %s
                 ORDER BY username
@@ -306,7 +306,7 @@ def search_users(query: str, exclude_user_id: Optional[int] = None) -> List[dict
         else:
             cur.execute("""
                 SELECT user_id, username, email
-                FROM maxxx_local.users
+                FROM maxxx_vps.users
                 WHERE username ILIKE %s OR email ILIKE %s
                 ORDER BY username
             """, (search_pattern, search_pattern))
@@ -342,7 +342,7 @@ def ban_user_with_reason(target_user_id: int, admin_user_id: int, reason: str) -
     cur = conn.cursor()
     try:
         # Проверяем, что целевой пользователь существует и не является админом
-        cur.execute("SELECT is_admin FROM maxxx_local.users WHERE user_id = %s", (target_user_id,))
+        cur.execute("SELECT is_admin FROM maxxx_vps.users WHERE user_id = %s", (target_user_id,))
         row = cur.fetchone()
         if not row or row[0]:  # Не найден или админ
             return False
@@ -393,7 +393,7 @@ def unban_user(user_id: int, admin_user_id: int) -> bool:
     cur = conn.cursor()
     try:
         # Проверяем, что пользователь существует и забанен
-        cur.execute("SELECT is_banned FROM maxxx_local.users WHERE user_id = %s", (user_id,))
+        cur.execute("SELECT is_banned FROM maxxx_vps.users WHERE user_id = %s", (user_id,))
         row = cur.fetchone()
         if not row or not row[0]:  # Не найден или не забанен
             return False
@@ -403,7 +403,7 @@ def unban_user(user_id: int, admin_user_id: int) -> bool:
         cur.execute("UPDATE users SET is_banned = false WHERE user_id = %s", (user_id,))
         
         # 2. Удаляем запись из таблицы активных банов
-        cur.execute("DELETE FROM maxxx_local.bans WHERE user_id = %s", (user_id,))
+        cur.execute("DELETE FROM maxxx_vps.bans WHERE user_id = %s", (user_id,))
         
         # 3. Записываем в историю
         cur.execute("""
@@ -440,7 +440,7 @@ def get_ban_history(user_id: Optional[int] = None, limit: int = 50) -> List[dict
                 SELECT h.history_id, h.user_id, u.username, h.action, 
                        h.performed_by, bu.username as performed_by_username,
                        h.reason, h.created_at
-                FROM maxxx_local.ban_history h
+                FROM maxxx_vps.ban_history h
                 JOIN users u ON h.user_id = u.user_id
                 LEFT JOIN users bu ON h.performed_by = bu.user_id
                 WHERE h.user_id = %s
@@ -452,7 +452,7 @@ def get_ban_history(user_id: Optional[int] = None, limit: int = 50) -> List[dict
                 SELECT h.history_id, h.user_id, u.username, h.action, 
                        h.performed_by, bu.username as performed_by_username,
                        h.reason, h.created_at
-                FROM maxxx_local.ban_history h
+                FROM maxxx_vps.ban_history h
                 JOIN users u ON h.user_id = u.user_id
                 LEFT JOIN users bu ON h.performed_by = bu.user_id
                 ORDER BY h.created_at DESC
@@ -492,7 +492,7 @@ def get_active_bans() -> List[dict]:
             SELECT b.ban_id, b.user_id, u.username, b.banned_by, 
                    bu.username as banned_by_username, b.reason, 
                    b.created_at
-            FROM maxxx_local.bans b
+            FROM maxxx_vps.bans b
             JOIN users u ON b.user_id = u.user_id
             LEFT JOIN users bu ON b.banned_by = bu.user_id
             ORDER BY b.created_at DESC

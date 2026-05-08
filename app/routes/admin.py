@@ -162,8 +162,8 @@ def get_reports(
                 r.report_id, r.message_id, r.reporter_id, r.reason, 
                 r.status, r.created_at, r.reviewed_by, r.reviewed_at,
                 m.content as message_text, m.sender_id, m.chat_id
-            FROM maxxx_local.message_reports r
-            JOIN maxxx_local.messages m ON r.message_id = m.message_id
+            FROM maxxx_vps.message_reports r
+            JOIN maxxx_vps.messages m ON r.message_id = m.message_id
         """
         params = []
         
@@ -220,8 +220,8 @@ def review_report(
         # Проверяем существование жалобы и получаем данные
         cur.execute("""
             SELECT r.message_id, m.sender_id 
-            FROM maxxx_local.message_reports r
-            JOIN maxxx_local.messages m ON r.message_id = m.message_id
+            FROM maxxx_vps.message_reports r
+            JOIN maxxx_vps.messages m ON r.message_id = m.message_id
             WHERE r.report_id = %s
         """, (request.report_id,))
         row = cur.fetchone()
@@ -237,7 +237,7 @@ def review_report(
                 raise HTTPException(status_code=400, detail="Причина бана обязательна")
             
             # Проверяем, что sender_id не админ
-            cur.execute("SELECT is_admin FROM maxxx_local.users WHERE user_id = %s", (sender_id,))
+            cur.execute("SELECT is_admin FROM maxxx_vps.users WHERE user_id = %s", (sender_id,))
             admin_row = cur.fetchone()
             if admin_row and admin_row[0]:
                 raise HTTPException(status_code=403, detail="Нельзя забанить администратора")
@@ -247,7 +247,7 @@ def review_report(
             
             # Обновляем статус жалобы
             cur.execute("""
-                UPDATE maxxx_local.message_reports 
+                UPDATE maxxx_vps.message_reports 
                 SET status = 'actioned', reviewed_by = %s, reviewed_at = NOW()
                 WHERE report_id = %s
             """, (current_user_id, request.report_id))
@@ -255,7 +255,7 @@ def review_report(
         elif request.action == 'dismiss':
             # Отклоняем жалобу (статус 'reviewed' означает, что жалоба рассмотрена и отклонена)
             cur.execute("""
-                UPDATE maxxx_local.message_reports 
+                UPDATE maxxx_vps.message_reports 
                 SET status = 'reviewed', reviewed_by = %s, reviewed_at = NOW()
                 WHERE report_id = %s
             """, (current_user_id, request.report_id))
