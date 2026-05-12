@@ -1,15 +1,11 @@
 # Python
 __pycache__/
 *.py[cod]
-*.class
 *.so
 .Python
 .venv/
 env/
 venv/
-ENV/
-pip-log.txt
-pip-delete-this-directory.txt
 
 # IDE
 .vscode/
@@ -27,14 +23,13 @@ nohup.out
 .DS_Store
 Thumbs.db
 
-# Env files with secrets (ВАЖНО: не пушим пароли!)
+# Secrets (НИКОГДА не пушим!)
 .env
 
-# Uploads (файлы пользователей лучше не хранить в гите)
-uploads/*
+# User uploads (файлы пользователей не хранятся в гите)
+uploads/
 !uploads/.gitkeep
 
 # Database dumps
-*.sql
-!app/init_db.sql
-.env
+*.sql.backup
+dump_*.sql
