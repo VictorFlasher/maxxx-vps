@@ -110,7 +110,14 @@ async def security_headers_middleware(request: Request, call_next):
 # ПРИМЕЧАНИЕ: allow_origins=["*"] с allow_credentials=True может не работать в некоторых браузерах для WebSocket
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8000", "http://127.0.0.1:8000"],  # Явно указываем origins для WebSocket
+    # Разрешаем доступ с домена и локально для тестов
+    allow_origins=[
+    "http://messenger.vaandas.ru",
+    "https://messenger.vaandas.ru", # На будущее, когда будет HTTPS
+    "http://localhost:8000",
+    "http://127.0.0.1:8000"
+    ],
+
     allow_credentials=True,  # Включаем credentials для WebSocket
     allow_methods=["*"],  # Разрешаем все методы включая WebSocket
     allow_headers=["*"],  # Разрешаем все заголовки включая Sec-WebSocket-*
