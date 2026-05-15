@@ -16,9 +16,9 @@ from ..models.user import (
     get_ban_history, 
     get_active_bans,
     get_db_connection, 
-    release_db_connection,
     get_user_by_id
 )
+from ..database import release_db_connection
 from .auth import get_current_user_from_header
 
 
