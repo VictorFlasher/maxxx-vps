@@ -1,35 +1,68 @@
-# Python
-__pycache__/
-*.py[cod]
-*.so
-.Python
-.venv/
-env/
+```
+# Dependencies
+node_modules/
 venv/
+.venv/
+__pycache__/
+.mypy_cache/
+.pytest_cache/
+target/
+.gradle/
 
-# IDE
+# Build artifacts
+dist/
+build/
+*.pyc
+*.class
+*.o
+*.exe
+*.dll
+*.so
+*.a
+*.obj
+*.out
+
+# Editor/IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
+*.tmp
 
-# Logs
-logs/
-*.log
-server.log
-nohup.out
-
-# OS
+# System files
 .DS_Store
 Thumbs.db
-
-# Secrets (НИКОГДА не пушим!)
 .env
+.env.local
+*.env.*
 
-# User uploads (файлы пользователей не хранятся в гите)
-uploads/
-!uploads/.gitkeep
+# Logs and coverage
+*.log
+coverage/
+htmlcov/
+.coverage
 
-# Database dumps
-*.sql.backup
-dump_*.sql
+# Compressed files
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.zst
+*.lz4
+*.lzh
+*.cab
+*.arj
+*.rpm
+*.deb
+*.Z
+*.lz
+*.lzo
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.zst
+```
