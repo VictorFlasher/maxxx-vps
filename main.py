@@ -35,7 +35,7 @@ from app.utils import init_ws_manager, close_ws_manager
 async def lifespan(app: FastAPI):
     """Управление жизненным циклом приложения."""
     # Startup
-    init_db_pool(minconn=2, maxconn=10)
+    init_db_pool(minconn=5, maxconn=50)
     await init_ws_manager()
     logging.info("Приложение запущено")
     yield

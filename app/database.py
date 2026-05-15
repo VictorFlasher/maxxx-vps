@@ -3,6 +3,7 @@ import psycopg2
 from psycopg2 import pool, sql
 from typing import Optional
 import logging
+from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
 
@@ -29,11 +30,13 @@ def get_schema_name() -> str:
     """
     return SCHEMA_NAME
 
+
 # === Пул соединений ===
 # Глобальный пул соединений для производительности
 db_pool: Optional[pool.ThreadedConnectionPool] = None
 
-def init_db_pool(minconn: int = 2, maxconn: int = 10):
+
+def init_db_pool(minconn: int = 5, maxconn: int = 50):
     """
     Инициализирует пул соединений с базой данных.
     
@@ -43,62 +46,57 @@ def init_db_pool(minconn: int = 2, maxconn: int = 10):
     """
     global db_pool
     try:
+        # Добавляем options для установки search_path при создании каждого соединения
+        pool_config = DB_CONFIG.copy()
+        pool_config["options"] = f"-c search_path={SCHEMA_NAME}"
+        
         db_pool = pool.ThreadedConnectionPool(
             minconn=minconn,
             maxconn=maxconn,
-            **DB_CONFIG
+            **pool_config
         )
         logger.info(f"Пул соединений к БД инициализирован (min={minconn}, max={maxconn})")
     except Exception as e:
         logger.error(f"Ошибка инициализации пула соединений: {e}")
         raise
 
+
+@contextmanager
 def get_db_connection():
     """
-    Получает соединение из пула или создаёт новое (если пул не инициализирован).
-    Автоматически устанавливает search_path на схему "maxxx-local".
+    Контекстный менеджер для получения соединения из пула.
+    Автоматически возвращает соединение в пул после использования.
+    Search_path устанавливается при создании соединения через options.
     
-    Returns:
+    Yields:
         psycopg2.connection: активное соединение с БД
     
     Raises:
         RuntimeError: если не удаётся получить соединение с базой данных
     """
+    conn = None
     if db_pool is not None:
         try:
             conn = db_pool.getconn()
-            with conn.cursor() as cur:
-                # Безопасная установка search_path через экранирование имени схемы
-                schema_name_quoted = sql.Identifier(SCHEMA_NAME).string.replace('"', '""')
-                cur.execute(f'SET search_path TO "{schema_name_quoted}"')
-            return conn
+            yield conn
         except Exception as e:
-            logger.error(f"Ошибка получения соединения из пула: {e}")
+            logger.error(f"Ошибка работы с соединением из пула: {e}")
+            if conn:
+                conn.rollback()
             raise RuntimeError(f"Не удалось получить соединение из пула: {e}") from e
+        finally:
+            if conn:
+                try:
+                    db_pool.putconn(conn)
+                except Exception as e:
+                    logger.error(f"Ошибка возврата соединения в пул: {e}")
     else:
         # Fallback: создаём новое соединение (для тестов или если пул не инициализирован)
         try:
             conn = psycopg2.connect(**DB_CONFIG)
-            with conn.cursor() as cur:
-                # Безопасная установка search_path через экранирование имени схемы
-                schema_name_quoted = sql.Identifier(SCHEMA_NAME).string.replace('"', '""')
-                cur.execute(f'SET search_path TO "{schema_name_quoted}"')
-            return conn
+            yield conn
         except Exception as e:
             raise RuntimeError(f"Не удалось подключиться к базе данных: {e}") from e
-
-def release_db_connection(conn):
-    """
-    Возвращает соединение обратно в пул.
-    
-    Args:
-        conn: Соединение для возврата
-    """
-    global db_pool
-    if db_pool is not None:
-        try:
-            db_pool.putconn(conn)
-        except Exception as e:
-            logger.error(f"Ошибка возврата соединения в пул: {e}")
-    else:
-        conn.close()
+        finally:
+            if conn:
+                conn.close()

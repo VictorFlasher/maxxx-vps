@@ -1,35 +1,40 @@
-# Python
+```
+# Compiled and build artifacts
+*.pyc
 __pycache__/
-*.py[cod]
-*.so
-.Python
-.venv/
-env/
-venv/
 
-# IDE
+# Dependencies
+.venv/
+venv/
+pip-tools/
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Environment
+.env
+.env.local
+.env.*
+
+# Editors
 .vscode/
 .idea/
-*.swp
-*.swo
 
-# Logs
-logs/
-*.log
-server.log
-nohup.out
+# Coverage reports
+.coverage
+coverage/
+htmlcov/
 
-# OS
-.DS_Store
-Thumbs.db
+# Database
+*.db
+*.sqlite
+*.sqlite3
 
-# Secrets (НИКОГДА не пушим!)
-.env
-
-# User uploads (файлы пользователей не хранятся в гите)
-uploads/
-!uploads/.gitkeep
-
-# Database dumps
-*.sql.backup
-dump_*.sql
+# Python specific
+*.py[cod]
+*$py.class
+*.so
+.Python
+```
