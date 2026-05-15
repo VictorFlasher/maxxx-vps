@@ -425,6 +425,38 @@
             display: block;
             background: #ff5252;
         }
+        /* Индикатор загрузки (спиннер) */
+        .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .btn-loading {
+            position: relative;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        .btn-loading .spinner {
+            display: inline-block;
+        }
+        .btn-loading .btn-text {
+            opacity: 0;
+        }
+        .chat-item.loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .input-area.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body>
@@ -466,11 +498,11 @@
             <div class="messages" id="messages">
                 <div class="empty-chat">Выберите чат</div>
             </div>
-            <div class="input-area">
-                <label class="file-label">📎 Файл</label>
+            <div class="input-area" id="inputArea">
+                <label class="file-label"><span class="btn-text">📎 Файл</span><span class="spinner"></span></label>
                 <input type="file" id="fileInput" class="file-input">
                 <input type="text" id="messageInput" placeholder="Введите сообщение..." maxlength="500" autocomplete="off">
-                <button onclick="sendMessage()">Отправить</button>
+                <button onclick="sendMessage()" id="sendBtn"><span class="btn-text">Отправить</span><span class="spinner"></span></button>
             </div>
         </div>
     </div>
@@ -679,6 +711,10 @@
                 return;
             }
 
+            // Блокируем кнопку и показываем индикатор загрузки
+            const leaveBtn = document.querySelector('.leave-btn');
+            if (leaveBtn) leaveBtn.classList.add('btn-loading');
+
             try {
                 const response = await fetch(`/api/chats/${currentChatId}/leave`, {
                     method: 'DELETE',
@@ -715,6 +751,9 @@
             } catch (err) {
                 console.error('Ошибка при выходе из чата:', err);
                 alert('Не удалось покинуть чат');
+            } finally {
+                // Разблокируем кнопку
+                if (leaveBtn) leaveBtn.classList.remove('btn-loading');
             }
         }
 
@@ -733,6 +772,10 @@
             if (!confirm('Вы уверены, что хотите удалить этот чат? Вся история переписки будет удалена.')) {
                 return;
             }
+
+            // Блокируем кнопку и показываем индикатор загрузки
+            const deleteBtn = document.querySelector('.delete-chat-btn');
+            if (deleteBtn) deleteBtn.classList.add('btn-loading');
 
             try {
                 const response = await fetch(`/api/chats/${currentChatId}`, {
@@ -769,6 +812,9 @@
             } catch (err) {
                 console.error('Ошибка при удалении чата:', err);
                 alert('Не удалось удалить чат');
+            } finally {
+                // Разблокируем кнопку
+                if (deleteBtn) deleteBtn.classList.remove('btn-loading');
             }
         }
 
@@ -783,6 +829,10 @@
             if (!emailOrUsername || !emailOrUsername.trim()) {
                 return;
             }
+
+            // Блокируем кнопку и показываем индикатор загрузки
+            const inviteBtn = document.querySelector('.invite-btn');
+            if (inviteBtn) inviteBtn.classList.add('btn-loading');
 
             try {
                 const response = await fetch(`/api/chats/${currentChatId}/invite`, {
@@ -805,6 +855,9 @@
             } catch (err) {
                 console.error('Ошибка при приглашении:', err);
                 alert('Не удалось пригласить пользователя');
+            } finally {
+                // Разблокируем кнопку
+                if (inviteBtn) inviteBtn.classList.remove('btn-loading');
             }
         }
 
@@ -1328,32 +1381,69 @@
             }
         }
 
+        // Глобальная переменная для отслеживания состояния загрузки
+        let isLoading = false;
+
+        // Функция для установки состояния загрузки на кнопке отправки
+        function setLoading(elementId, loading) {
+            const btn = document.getElementById(elementId);
+            if (btn) {
+                if (loading) {
+                    btn.classList.add('btn-loading');
+                } else {
+                    btn.classList.remove('btn-loading');
+                }
+            }
+        }
+
+        // Функция для блокировки области ввода
+        function setInputAreaLoading(loading) {
+            const inputArea = document.getElementById('inputArea');
+            if (inputArea) {
+                if (loading) {
+                    inputArea.classList.add('loading');
+                } else {
+                    inputArea.classList.remove('loading');
+                }
+            }
+        }
+
         async function sendMessage() {
-            if (!currentChatId) return;
+            if (!currentChatId || isLoading) return;
             const input = document.getElementById('messageInput');
             const text = input.value.trim();
             if (!text) return;
 
-            // Отправляем через WebSocket для текущего чата
-            const ws = wsConnections[currentChatId];
-            console.log(`📤 Отправка сообщения в чат ${currentChatId}, ws=${ws ? 'OK' : 'NULL'}, readyState=${ws?.readyState}`);
-            
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ text }));
-                input.value = '';
-            } else {
-                console.error('❌ Нет подключения к чату. Пробуем переподключиться...');
-                // Пытаемся переподключиться
-                connectWebSocket(currentChatId);
-                setTimeout(() => {
-                    const wsRetry = wsConnections[currentChatId];
-                    if (wsRetry && wsRetry.readyState === WebSocket.OPEN) {
-                        wsRetry.send(JSON.stringify({ text }));
-                        input.value = '';
-                    } else {
-                        alert('Нет подключения к чату. Проверьте соединение.');
-                    }
-                }, 1000);
+            // Блокируем повторные нажатия
+            isLoading = true;
+            setLoading('sendBtn', true);
+
+            try {
+                // Отправляем через WebSocket для текущего чата
+                const ws = wsConnections[currentChatId];
+                console.log(`📤 Отправка сообщения в чат ${currentChatId}, ws=${ws ? 'OK' : 'NULL'}, readyState=${ws?.readyState}`);
+                
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ text }));
+                    input.value = '';
+                } else {
+                    console.error('❌ Нет подключения к чату. Пробуем переподключиться...');
+                    // Пытаемся переподключиться
+                    connectWebSocket(currentChatId);
+                    setTimeout(() => {
+                        const wsRetry = wsConnections[currentChatId];
+                        if (wsRetry && wsRetry.readyState === WebSocket.OPEN) {
+                            wsRetry.send(JSON.stringify({ text }));
+                            input.value = '';
+                        } else {
+                            alert('Нет подключения к чату. Проверьте соединение.');
+                        }
+                    }, 1000);
+                }
+            } finally {
+                // Разблокируем кнопку после отправки
+                isLoading = false;
+                setLoading('sendBtn', false);
             }
         }
 
@@ -1392,6 +1482,10 @@
                 return;
             }
 
+            // Блокируем кнопку сохранения
+            const saveBtn = document.querySelector('.save-btn');
+            if (saveBtn) saveBtn.classList.add('btn-loading');
+
             try {
                 const response = await fetch(`/api/messages/${editingMessageId}`, {
                     method: 'PUT',
@@ -1419,11 +1513,19 @@
             } catch (err) {
                 console.error('Ошибка при редактировании:', err);
                 alert('Не удалось отредактировать сообщение');
+            } finally {
+                // Разблокируем кнопку
+                if (saveBtn) saveBtn.classList.remove('btn-loading');
             }
         }
 
         async function deleteMessage(messageId) {
             if (!confirm('Вы уверены, что хотите удалить это сообщение?')) return;
+
+            // Находим кнопку удаления в действиях сообщения и блокируем её
+            const messageDiv = document.querySelector(`.message[data-message-id="${messageId}"]`);
+            const deleteBtn = messageDiv?.querySelector('.delete-btn');
+            if (deleteBtn) deleteBtn.classList.add('btn-loading');
 
             try {
                 const response = await fetch(`/api/messages/${messageId}`, {
@@ -1433,7 +1535,6 @@
 
                 if (response.ok) {
                     // Удаляем сообщение из UI
-                    const messageDiv = document.querySelector(`.message[data-message-id="${messageId}"]`);
                     if (messageDiv) {
                         messageDiv.remove();
                     }
@@ -1444,11 +1545,19 @@
             } catch (err) {
                 console.error('Ошибка при удалении:', err);
                 alert('Не удалось удалить сообщение');
+            } finally {
+                // Разблокируем кнопку
+                if (deleteBtn) deleteBtn.classList.remove('btn-loading');
             }
         }
 
         async function reportMessage(messageId) {
             const reason = prompt('Укажите причину жалобы (необязательно):') || 'Без указания причины';
+
+            // Находим кнопку жалобы в действиях сообщения и блокируем её
+            const messageDiv = document.querySelector(`.message[data-message-id="${messageId}"]`);
+            const reportBtn = messageDiv?.querySelector('.report-btn');
+            if (reportBtn) reportBtn.classList.add('btn-loading');
 
             try {
                 const response = await fetch('/api/messages/report', {
@@ -1472,6 +1581,9 @@
             } catch (err) {
                 console.error('Ошибка при отправке жалобы:', err);
                 alert('Не удалось отправить жалобу');
+            } finally {
+                // Разблокируем кнопку
+                if (reportBtn) reportBtn.classList.remove('btn-loading');
             }
         }
 
@@ -1488,10 +1600,14 @@
         // Загрузка файла - обработчик change
         document.getElementById('fileInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
-            if (!file) return;
+            if (!file || !currentChatId) return;
 
             const formData = new FormData();
             formData.append('file', file);
+
+            // Блокируем кнопку загрузки файла
+            const fileLabel = document.querySelector('.file-label');
+            if (fileLabel) fileLabel.classList.add('btn-loading');
 
             try {
                 const response = await fetch(`/api/chats/${currentChatId}/upload`, {
@@ -1509,6 +1625,9 @@
             } catch (err) {
                 console.error('Ошибка:', err);
                 alert('Не удалось загрузить файл');
+            } finally {
+                // Разблокируем кнопку
+                if (fileLabel) fileLabel.classList.remove('btn-loading');
             }
             e.target.value = '';
         });

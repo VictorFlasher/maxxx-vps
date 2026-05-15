@@ -61,6 +61,30 @@ def init_db_pool(minconn: int = 5, maxconn: int = 50):
         raise
 
 
+def release_db_connection(conn):
+    """
+    Возвращает соединение обратно в пул.
+    
+    Args:
+        conn: Соединение с базой данных, которое нужно вернуть в пул
+    """
+    if db_pool is not None and conn is not None:
+        try:
+            db_pool.putconn(conn)
+        except Exception as e:
+            logger.error(f"Ошибка возврата соединения в пул: {e}")
+            try:
+                conn.close()
+            except:
+                pass
+    elif conn is not None:
+        # Если пула нет, просто закрываем соединение
+        try:
+            conn.close()
+        except:
+            pass
+
+
 @contextmanager
 def get_db_connection():
     """
